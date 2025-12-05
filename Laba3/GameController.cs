@@ -52,24 +52,6 @@ public static class GameController
         state.Map = new Map(0, 0);        
         state.Map.Width = 20;
         state.Map.Height = 12;
-        state.Map.Grid = new Cell[20, 12];
-
-        // Заполняем полом
-        for (int x = 0; x < 20; x++)
-            for (int y = 0; y < 12; y++)
-                state.Map.Grid[x, y] = new Cell { Type = Cell.CellType.Floor };
-
-        // Рамка из стен
-        for (int x = 0; x < 20; x++)
-        {
-            state.Map.Grid[x, 0] = new Cell { Type = Cell.CellType.Wall };
-            state.Map.Grid[x, 11] = new Cell { Type = Cell.CellType.Wall };
-        }
-        for (int y = 0; y < 12; y++)
-        {
-            state.Map.Grid[0, y] = new Cell { Type = Cell.CellType.Wall };
-            state.Map.Grid[19, y] = new Cell { Type = Cell.CellType.Wall };
-        }
 
         state.Player = new Player { X = 5, Y = 5 };
 
