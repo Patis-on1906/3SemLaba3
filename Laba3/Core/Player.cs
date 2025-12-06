@@ -1,12 +1,19 @@
 namespace Laba3;
+using System.Text.Json;
 
-public class Player : IMoveable, ISaveable
+public class Player : MovingUnit, ISaveable
 {
-    public int X { get; set; }
-    public int Y { get; set; }
-    public char Symbol => 'P';
+    public override char Symbol => 'P';
+    
+    public string Serialize() => JsonSerializer.Serialize(this);
 
-    public void Move(int dx, int dy, IMapCollision map) {}
-    public string Serialize() => throw new NotImplementedException();
-    public void Deserialize(string json) => throw new NotImplementedException();
+    public void Deserialize(string json)
+    {
+        var obj = JsonSerializer.Deserialize<Player>(json);
+        if (obj == null) 
+            throw new ArgumentException("Invalid JSON for Player");
+        
+        X = obj.X;
+        Y = obj.Y;
+    }
 }

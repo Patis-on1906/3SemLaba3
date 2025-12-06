@@ -3,8 +3,9 @@ namespace Laba3;
 public class GameState
 {
     public Player Player { get; set; }
-    public Map CurrentMap { get; set; }
-    public List<Enemy> Enemies { get; set; } = new();
+    public Map Map { get; set; }
+    public List<MovingEnemy> MovingEnemies { get; set; } = new();
+    public List<StaticEnemy> StaticEnemies { get; set; } = new();
     public List<Treasure> Treasures { get; set; } = new();
     public string GameVersion { get; set; }
     public DateTime SaveTime { get; set; }
