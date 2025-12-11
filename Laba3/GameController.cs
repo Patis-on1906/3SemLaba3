@@ -1,66 +1,87 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 
-namespace Laba3;
-
-public static class GameController
+namespace Laba3
 {
-    public static void Run()
+    public class GameController
     {
-        GameState state = new GameState();
-        CreateTestLevel(state);  
+        private readonly GameState _state;
+        private readonly IPlayerLocator _playerLocator;
+        private bool _isGameActive = true; 
 
-        while (true)
+        public GameController(GameState state)
         {
-            Renderer.Draw(state);
+            _state = state ?? throw new ArgumentNullException(nameof(state)); 
+            _playerLocator = new PlayerLocator(_state.Player);
+        }
 
-            var key = Console.ReadKey(true).Key;
-
-            int dx = 0, dy = 0;
-            switch (key)
+        public void Run()
+        {
+            // простой игровой цикл
+            while (true)
             {
-                case ConsoleKey.UpArrow: case ConsoleKey.W: dy = -1; break;
-                case ConsoleKey.DownArrow: case ConsoleKey.S: dy = 1; break;
-                case ConsoleKey.LeftArrow: case ConsoleKey.A: dx = -1; break;
-                case ConsoleKey.RightArrow: case ConsoleKey.D: dx = 1; break;
-                case ConsoleKey.Q: return;
-            }
+                Renderer.Draw(_state);
 
-            if (dx != 0 || dy != 0)
-            {
-                int newX = state.Player.X + dx;
-                int newY = state.Player.Y + dy;
+                var key = Console.ReadKey(true).Key;
 
-                if (state.Map.IsWalkable(newX, newY))
+                int dx = 0, dy = 0;
+                switch (key)
                 {
-                    state.Player.X = newX;
-                    state.Player.Y = newY;
+                    case ConsoleKey.UpArrow:
+                    case ConsoleKey.W:
+                        dy = -1; break;
+                    case ConsoleKey.DownArrow:
+                    case ConsoleKey.S:
+                        dy = 1; break;
+                    case ConsoleKey.LeftArrow:
+                    case ConsoleKey.A:
+                        dx = -1; break;
+                    case ConsoleKey.RightArrow:
+                    case ConsoleKey.D:
+                        dx = 1; break;
+                    case ConsoleKey.Q:
+                        return;
+                }
 
-                    // Автосбор сокровищ
-                    foreach (var t in state.Treasures)
-                        if (t.X == newX && t.Y == newY && !t.Collected)
+                if (dx != 0 || dy != 0)
+                {
+                    // вызываем Move у игрока (Player наследует MovingUnit)
+                    _state.Player.Move(dx, dy, _state.Map);
+
+                    // После шага игрока — автосбор сокровищ
+                    foreach (var t in _state.Treasures)
+                        if (!t.Collected && t.X == _state.Player.X && t.Y == _state.Player.Y)
                             t.Collected = true;
                 }
+
+                // обновление врагов — через интерфейс IUpdatable
+                foreach (var enemy in _state.MovingEnemies)
+                    (enemy as IUpdatable)?.Update(_state.Map, _playerLocator);
+
+                // простой throttle
+                Thread.Sleep(80);
             }
-
-            Thread.Sleep(50);
         }
-    }
 
-    private static void CreateTestLevel(GameState state)
-    {
-        state.Map = new Map(0, 0);        
-        state.Map.Width = 20;
-        state.Map.Height = 12;
+        // вспомогательный метод для тестового уровня
+        public static GameState CreateTestLevel()
+        {
+            var state = new GameState(new Map(20, 12));
+            state.Player = new Player { X = 5, Y = 5 };
 
-        state.Player = new Player { X = 5, Y = 5 };
+            state.Treasures.Clear();
+            state.Treasures.Add(new Treasure { X = 10, Y = 3 });
+            state.Treasures.Add(new Treasure { X = 15, Y = 8 });
 
-        state.Treasures.Clear();
-        state.Treasures.Add(new Treasure { X = 10, Y = 3 });
-        state.Treasures.Add(new Treasure { X = 15, Y = 8 });
+            state.MovingEnemies.Clear();
+            state.MovingEnemies.Add(new MovingEnemy { X = 8, Y = 7 });
+            state.MovingEnemies.Add(new MovingEnemy { X = 12, Y = 4 });
 
-        state.Enemies.Clear();
-        state.Enemies.Add(new Enemy { X = 8, Y = 7 });
-        state.Enemies.Add(new Enemy { X = 12, Y = 4 });
+            state.StaticEnemies.Clear();
+            state.StaticEnemies.Add(new StaticEnemy { X = 14, Y = 6 });
+
+            return state;
+        }
     }
 }

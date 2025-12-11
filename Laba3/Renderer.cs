@@ -1,51 +1,47 @@
 using System;
 using System.Linq;
 
-namespace Laba3;
-
-public static class Renderer
+namespace Laba3
 {
-    public static void Draw(GameState state)
+    public static class Renderer
     {
-        Console.Clear();
-
-        for (int y = 0; y < state.Map.Height; y++)
+        public static void Draw(GameState state)
         {
-            for (int x = 0; x < state.Map.Width; x++)
+            Console.Clear();
+
+            for (int y = 0; y < state.Map.Height; y++)
             {
-                char c = GetCharForCell(x, y, state);
-                Console.Write(c);
+                for (int x = 0; x < state.Map.Width; x++)
+                {
+                    char c = GetCharForCell(x, y, state);
+                    Console.Write(c);
+                }
+                Console.WriteLine();
             }
-            Console.WriteLine();
+
+            int collected = state.Treasures.Count(t => t.Collected);
+            Console.WriteLine($"РЎРѕР±СЂР°РЅРѕ СЃРѕРєСЂРѕРІРёС‰: {collected}");
+            Console.WriteLine("WASD/Arrows - move, Q - quit");
         }
 
-        int collected = state.Treasures.Count(t => t.Collected);
-        Console.WriteLine($"Собрано сокровищ: {collected}");
-    }
-
-    private static char GetCharForCell(int x, int y, GameState state)
-    {
-        // 1. Игрок
-        if (state.Player.X == x && state.Player.Y == y)
-            return 'P';
-
-        // 2. Сокровище
-        foreach (var t in state.Treasures)
-            if (t.X == x && t.Y == y && !t.Collected)
-                return 'T';
-
-        // 3. Враг
-        foreach (var e in state.Enemies)
-            if (e.X == x && e.Y == y)
-                return 'E';
-
-        // 4. Стена
-        if (x >= 0 && x < state.Map.Width && y >= 0 && y < state.Map.Height)
+        private static char GetCharForCell(int x, int y, GameState state)
         {
-            if (state.Map.Grid[x, y].Type == Cell.CellType.Wall)
-                return '#';
-        }
+            if (state.Player != null && state.Player.X == x && state.Player.Y == y)
+                return state.Player.Symbol;
+            
+            var treasure = state.Treasures.FirstOrDefault(t => !t.Collected && t.X == x && t.Y == y);
+            if (treasure != null) return treasure.Symbol;
+            
+            var mEnemy = state.MovingEnemies.FirstOrDefault(e => e.X == x && e.Y == y);
+            if (mEnemy != null) return mEnemy.Symbol;
+            
+            var sEnemy = state.StaticEnemies.FirstOrDefault(e => e.X == x && e.Y == y);
+            if (sEnemy != null) return sEnemy.Symbol;
+            
+            var cell = state.Map.GetCell(x, y);
+            if (cell != null) return cell.Symbol;
 
-        return ' ';
+            return ' ';
+        }
     }
 }

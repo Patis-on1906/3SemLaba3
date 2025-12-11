@@ -11,10 +11,9 @@ public abstract class MovingUnit : IEntity, IMoveable
         int newX = X + dx;
         int newY = Y + dy;
 
-        if (map.IsWalkable(newX, newY))
-        {
-            X = newX;
-            Y = newY;
-        }
+        if (!map.IsWalkable(newX, newY)) return;
+        
+        X = newX;
+        Y = newY;
     }
 }
