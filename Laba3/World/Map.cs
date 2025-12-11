@@ -1,83 +1,65 @@
-using System.Security.Cryptography.X509Certificates;
-using static Laba3.Cell;
+using System;
 
-namespace Laba3;
-
-public class Map : IMapCollision
+namespace Laba3
 {
-
-    public int Width { get; set; }
-    public int Height { get; set; }
-    public Cell[,] Grid { get; set; }
-
-    public Map(int width, int height)
+    public class Map : IMapCollision
     {
+        public int Width { get; set; }
+        public int Height { get; set; }
+        public Cell[,] Grid { get; set; }
 
-        if (Width < 3 || height < 3)
-
-            throw new ArgumentException("минимальный аргумент карты 3x3");
-
-        Width = width;
-
-        Height = height;
-
-        Grid = new Cell[width, height];
-
-        GenerateMap();
-
-    }
-
-    private void GenerateMap()
-    {
-        for (int x = 0; x < Width; x++)
+        public Map(int width, int height)
         {
-            for (int y = 0; y < Height; y++)
+            if (width < 3 || height < 3)
+                throw new ArgumentException("РњРёРЅРёРјР°Р»СЊРЅС‹Р№ Р°СЂРіСѓРјРµРЅС‚ РєР°СЂС‚С‹ 3x3");
+
+            Width = width;
+            Height = height;
+            Grid = new Cell[width, height];
+
+            GenerateMap();
+        }
+
+        private void GenerateMap()
+        {
+            for (int x = 0; x < Width; x++)
             {
-                //стена по краям 
-                if (x == 0 || y == 0 || x == Width - 1 || y == Height - 1)
-
-
-                //создание внешних аспектов
+                for (int y = 0; y < Height; y++)
                 {
-                    Grid[x, y] = new Cell(CellType.Wall, x, y);
-                }
-                else
-                {
-                    Grid[x, y] = new Cell(CellType.Floor, x, y);
+                    if (x == 0 || y == 0 || x == Width - 1 || y == Height - 1)
+                        Grid[x, y] = new Cell(Cell.CellType.Wall, x, y);
+                    else
+                        Grid[x, y] = new Cell(Cell.CellType.Floor, x, y);
                 }
             }
         }
+
+        // Р’РѕР·РІСЂР°С‰Р°РµС‚ null РµСЃР»Рё РІРЅРµ РєР°СЂС‚С‹
+        public Cell? GetCell(int x, int y)
+        {
+            if (OutsideMap(x, y)) return null;
+            return Grid[x, y];
+        }
+
+        // РЈСЃС‚Р°РЅРѕРІРєР° С‚РёРїР° РєР»РµС‚РєРё (РґР°РµС‚ РІРѕР·РјРѕР¶РЅРѕСЃС‚СЊ РёР·РјРµРЅСЏС‚СЊ РєР°СЂС‚Сѓ)
+        public void SetCellType(int x, int y, Cell.CellType cellType)
+        {
+            if (OutsideMap(x, y))
+                throw new ArgumentOutOfRangeException(nameof(x), "РљРѕРѕСЂРґРёРЅР°С‚С‹ РІРЅРµ РєР°СЂС‚С‹");
+
+            Grid[x, y].Type = cellType;
+        }
+
+        // РџСЂРѕРІРµСЂСЏРµС‚ Рё РіСЂР°РЅРёС†С‹, Рё СЃР°РјСѓ РїСЂРѕС…РѕРґРёРјРѕСЃС‚СЊ РєР»РµС‚РєРё
+        public bool IsWalkable(int x, int y)
+        {
+            if (OutsideMap(x, y)) return false;
+            return Grid[x, y].IsWalkable;
+        }
+
+        public bool OutsideMap(int x, int y)
+        {
+            return x < 0 || x >= Width || y < 0 || y >= Height;
+        }
     }
-
-
-
-    // Получение клетки по указанным коор.
-    public Cell GetCell(int x, int y)
-    {
-        if (!IsWalkable(x, y))
-            return null;
-
-        return Grid[x, y];
-    }
-
-    //Устанавливаем тип клетки по указанным коор.
-    public void SetCellType(int x, int y, CellType cellType)
-    {
-        if (!IsWalkable(x, y))
-            throw new ArgumentOutOfRangeException($"координаты([x]) , ([y]) вне границы карты");
-
-        Grid[x, y].Type = cellType;
-    }
-
-
-
-    //првоерка можно ли проходить через стены 
-    public bool IsWalkable(int x, int y)
-    {
-
-        return x >= 0 && x < Width && y >= 0 && y < Height;
-    }
-
-
-
 }

@@ -1,9 +1,12 @@
-﻿namespace Laba3;
-
-public class Program
+﻿namespace Laba3
 {
-    public static void Main(string[] args)
+    public class Program
     {
-        GameController.Run();
+        public static void Main(string[] args)
+        {
+            var state = GameController.CreateTestLevel();
+            var controller = new GameController(state);
+            controller.Run();
+        }
     }
 }
