@@ -7,7 +7,7 @@ public class StaticEnemy : IEntity, ISaveable, IUpdatable
     public int Y { get; set; }                                                                                                                                                 
     public char Symbol => 'S';
     
-    public void Update(IMapCollision map, IPlayerLocator playerLocator)
+    public void Update(GameState state, IPlayerLocator playerLocator)
     {
         if (Math.Abs(playerLocator.PlayerX - X) <= 1 && Math.Abs(playerLocator.PlayerY - Y) <= 1)
         {

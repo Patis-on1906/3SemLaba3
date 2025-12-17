@@ -2,5 +2,5 @@ namespace Laba3;
 
 public interface IUpdatable
 {
-    void Update(IMapCollision map, IPlayerLocator playerLocator);
+    void Update(GameState state, IPlayerLocator playerLocator);
 }

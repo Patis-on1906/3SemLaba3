@@ -6,7 +6,7 @@ public class MovingEnemy : MovingUnit, ISaveable, IUpdatable
 {
     public override char Symbol => 'E';
 
-    public void Update(IMapCollision map, IPlayerLocator playerLocator)
+    public void Update(GameState state, IPlayerLocator playerLocator)
     {
         int dx = 0;
         int dy = 0;
@@ -16,9 +16,9 @@ public class MovingEnemy : MovingUnit, ISaveable, IUpdatable
         
         if (playerLocator.PlayerY > Y) dy = 1;
         else if (playerLocator.PlayerY < Y) dy = -1;
-        
-        Move(dx, 0, map);
-        if (dx == 0) Move(0, dy, map);
+
+        Move(dx, 0, state.Map, state, isPlayerMove: false);
+        Move(0, dy, state.Map, state, isPlayerMove: false);
     }
 
     public string Serialize() => JsonSerializer.Serialize(this);

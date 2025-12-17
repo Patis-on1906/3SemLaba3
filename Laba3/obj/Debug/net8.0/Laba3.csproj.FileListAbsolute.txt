@@ -1,0 +1,15 @@
+C:\Users\иваныч\source\repos\3SemLaba3\Laba3\bin\Debug\net8.0\Laba3.exe
+C:\Users\иваныч\source\repos\3SemLaba3\Laba3\bin\Debug\net8.0\Laba3.deps.json
+C:\Users\иваныч\source\repos\3SemLaba3\Laba3\bin\Debug\net8.0\Laba3.runtimeconfig.json
+C:\Users\иваныч\source\repos\3SemLaba3\Laba3\bin\Debug\net8.0\Laba3.pdb
+C:\Users\иваныч\source\repos\3SemLaba3\Laba3\obj\Debug\net8.0\Laba3.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\иваныч\source\repos\3SemLaba3\Laba3\obj\Debug\net8.0\Laba3.AssemblyInfoInputs.cache
+C:\Users\иваныч\source\repos\3SemLaba3\Laba3\obj\Debug\net8.0\Laba3.AssemblyInfo.cs
+C:\Users\иваныч\source\repos\3SemLaba3\Laba3\obj\Debug\net8.0\Laba3.csproj.CoreCompileInputs.cache
+C:\Users\иваныч\source\repos\3SemLaba3\Laba3\obj\Debug\net8.0\Laba3.sourcelink.json
+C:\Users\иваныч\source\repos\3SemLaba3\Laba3\obj\Debug\net8.0\Laba3.dll
+C:\Users\иваныч\source\repos\3SemLaba3\Laba3\obj\Debug\net8.0\refint\Laba3.dll
+C:\Users\иваныч\source\repos\3SemLaba3\Laba3\obj\Debug\net8.0\Laba3.pdb
+C:\Users\иваныч\source\repos\3SemLaba3\Laba3\obj\Debug\net8.0\Laba3.genruntimeconfig.cache
+C:\Users\иваныч\source\repos\3SemLaba3\Laba3\obj\Debug\net8.0\ref\Laba3.dll
+C:\Users\иваныч\source\repos\3SemLaba3\Laba3\bin\Debug\net8.0\Laba3.dll

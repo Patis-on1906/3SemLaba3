@@ -6,25 +6,53 @@ namespace Laba3
 {
     public class GameController
     {
-        private readonly GameState _state;
-        private readonly IPlayerLocator _playerLocator;
+        private GameState _state; 
+        private IPlayerLocator _playerLocator; 
+        private readonly IGameSaveService _saveService;
 
-        public GameController(GameState state)
+        public GameController(GameState state, IGameSaveService? saveService = null)
         {
-            _state = state ?? throw new ArgumentNullException(nameof(state)); 
-            _playerLocator = new PlayerLocator(_state.Player);
+            _state = state ?? throw new ArgumentNullException(nameof(state));
+            _playerLocator = new PlayerLocator(_state.Player); 
+            _saveService = saveService ?? new JsonGameSaveService();
+        }
+
+        public void SaveGame(string filePath = "save.json")
+        {
+            _saveService.Save(_state, filePath);
+            Console.WriteLine($"Игра сохранена в {filePath}");
+        }
+
+        public void LoadGame(string filePath = "save.json")
+        {
+            try
+            {
+                var loadedState = _saveService.Load(filePath);
+                _state = loadedState;
+
+                // Создаем новый PlayerLocator с загруженным игроком
+                _playerLocator = new PlayerLocator(_state.Player);
+
+                Console.WriteLine($"Игра загружена из {filePath}");
+                Console.Clear();
+                Renderer.Draw(_state);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка загрузки: {ex.Message}");
+                Console.WriteLine("Продолжаем текущую игру...");
+            }
         }
 
         public void Run()
         {
-            // простой игровой цикл
             while (true)
             {
                 Renderer.Draw(_state);
 
                 var key = Console.ReadKey(true).Key;
-
                 int dx = 0, dy = 0;
+
                 switch (key)
                 {
                     case ConsoleKey.UpArrow:
@@ -41,48 +69,54 @@ namespace Laba3
                         dx = 1; break;
                     case ConsoleKey.Q:
                         return;
+                    case ConsoleKey.T:
+                        SaveGame();
+                        break;
+                    case ConsoleKey.L: // Загрузка (L — Load)
+                        LoadGame();
+                        break;
                 }
 
-                if (dx != 0 || dy != 0)
-                {
-                    // вызываем Move у игрока (Player наследует MovingUnit)
-                    _state.Player.Move(dx, dy, _state.Map);
-
-                    // После шага игрока — автосбор сокровищ
-                    foreach (var t in _state.Treasures)
-                        if (!t.Collected && t.X == _state.Player.X && t.Y == _state.Player.Y)
-                            t.Collected = true;
-                }
-
-                // обновление врагов — через интерфейс IUpdatable
+                // Враги ходят первыми
                 foreach (var enemy in _state.MovingEnemies)
-                    (enemy as IUpdatable)?.Update(_state.Map, _playerLocator);
+                    enemy.Update(_state, _playerLocator);
 
                 foreach (var enemy in _state.StaticEnemies)
-                    (enemy as IUpdatable)?.Update(_state.Map, _playerLocator);
+                    enemy.Update(_state, _playerLocator);
 
-                // простой throttle
+                // Потом игрок
+                if (dx != 0 || dy != 0)
+                {
+                    _state.Player.Move(dx, dy, _state.Map, _state, isPlayerMove: true);
+
+                    // Сбор сокровищ
+                    foreach (var t in _state.Treasures)
+                    {
+                        if (!t.Collected && t.X == _state.Player.X && t.Y == _state.Player.Y)
+                            t.Collected = true;
+                    }
+
+                    // Уничтожение врагов
+                    _state.MovingEnemies.RemoveAll(e => e.X == _state.Player.X && e.Y == _state.Player.Y);
+                    _state.StaticEnemies.RemoveAll(e => e.X == _state.Player.X && e.Y == _state.Player.Y);
+                }
+
                 Thread.Sleep(80);
             }
         }
 
-        // вспомогательный метод для тестового уровня
         public static GameState CreateTestLevel()
         {
             var state = new GameState(new Map(20, 12));
             state.Player = new Player { X = 5, Y = 5 };
-
             state.Treasures.Clear();
             state.Treasures.Add(new Treasure { X = 10, Y = 3 });
             state.Treasures.Add(new Treasure { X = 15, Y = 8 });
-
             state.MovingEnemies.Clear();
             state.MovingEnemies.Add(new MovingEnemy { X = 8, Y = 7 });
             state.MovingEnemies.Add(new MovingEnemy { X = 12, Y = 4 });
-
             state.StaticEnemies.Clear();
             state.StaticEnemies.Add(new StaticEnemy { X = 14, Y = 6 });
-
             return state;
         }
     }

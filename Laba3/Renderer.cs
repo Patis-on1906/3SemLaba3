@@ -26,22 +26,28 @@ namespace Laba3
 
         private static char GetCharForCell(int x, int y, GameState state)
         {
-            if (state.Player != null && state.Player.X == x && state.Player.Y == y)
-                return state.Player.Symbol;
-            
-            var treasure = state.Treasures.FirstOrDefault(t => !t.Collected && t.X == x && t.Y == y);
-            if (treasure != null) return treasure.Symbol;
-            
-            var mEnemy = state.MovingEnemies.FirstOrDefault(e => e.X == x && e.Y == y);
-            if (mEnemy != null) return mEnemy.Symbol;
-            
-            var sEnemy = state.StaticEnemies.FirstOrDefault(e => e.X == x && e.Y == y);
-            if (sEnemy != null) return sEnemy.Symbol;
-            
-            var cell = state.Map.GetCell(x, y);
-            if (cell != null) return cell.Symbol;
+            // 1. Игрок — наивысший приоритет (виден всегда)
+            if (state.Player.X == x && state.Player.Y == y)
+                return state.Player.Symbol; // 'P'
 
-            return ' ';
+            // 2. Движущиеся враги — перекрывают сокровища и клетку
+            var movingEnemy = state.MovingEnemies.FirstOrDefault(e => e.X == x && e.Y == y);
+            if (movingEnemy != null)
+                return movingEnemy.Symbol; // 'E'
+
+            // 3. Статичные враги — тоже перекрывают сокровища и клетку
+            var staticEnemy = state.StaticEnemies.FirstOrDefault(e => e.X == x && e.Y == y);
+            if (staticEnemy != null)
+                return staticEnemy.Symbol; // 'S'
+
+            // 4. Несобранные сокровища — видны только если сверху ничего нет
+            var treasure = state.Treasures.FirstOrDefault(t => !t.Collected && t.X == x && t.Y == y);
+            if (treasure != null)
+                return treasure.Symbol; // 'T'
+
+            // 5. Фон — символ клетки (стена или пол)
+            var cell = state.Map.GetCell(x, y);
+            return cell?.Symbol ?? ' '; // '#' или '.', или пробел если вне карты
         }
     }
 }
