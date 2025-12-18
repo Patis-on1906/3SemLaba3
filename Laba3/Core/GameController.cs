@@ -58,9 +58,6 @@ namespace Laba3
                 // обновление врагов — через интерфейс IUpdatable
                 foreach (var enemy in _state.MovingEnemies)
                     (enemy as IUpdatable)?.Update(_state.Map, _playerLocator);
-
-                // простой throttle
-                Thread.Sleep(80);
             }
         }
 

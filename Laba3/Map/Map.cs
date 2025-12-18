@@ -1,8 +1,9 @@
-using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Laba3
 {
-    public class Map : IMapCollision
+    public class Map : IMapCollision, ISaveable
     {
         public int Width { get; set; }
         public int Height { get; set; }
@@ -60,6 +61,61 @@ namespace Laba3
         public bool OutsideMap(int x, int y)
         {
             return x < 0 || x >= Width || y < 0 || y >= Height;
+        }
+
+        public string Serialize()
+        {
+            var data = new MapSerializationData
+            {
+                Width = Width,
+                Height = Height,
+                Cells = new List<CellData>()
+            };
+
+            for (int x = 0; x < Width; x++)
+            {
+                for (int y = 0; y < Height; y++)
+                {
+                    data.Cells.Add(new CellData
+                    {
+                        X = x,
+                        Y = y,
+                        Type = Grid[x, y].Type
+                    });
+                }
+            }
+            
+            return JsonSerializer.Serialize(data);
+        }
+
+        public static Map Deserialize(string json)
+        {
+            var data = JsonSerializer.Deserialize<MapSerializationData>(json);
+            if (data == null)
+                throw new ArgumentException("Invalid JSON for Map");
+            
+            var map = new Map(data.Width, data.Height);
+
+            foreach (var cell in data.Cells)
+            {
+                map.Grid[cell.X, cell.Y] = new Cell(cell.Type, cell.X, cell.Y);
+            }
+
+            return map;
+        }
+        
+        private class MapSerializationData
+        {
+            public int Width { get; set; }
+            public int Height { get; set; }
+            public List<CellData> Cells { get; set; }
+        }
+
+        private class CellData
+        {
+            public int X { get; set; }
+            public int Y { get; set; }
+            public Cell.CellType Type { get; set; }
         }
     }
 }
