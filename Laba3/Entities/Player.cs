@@ -3,18 +3,16 @@ using System.Text.Json;
 
 namespace Laba3
 {
-    public class Player : MovingUnit, ISaveable, IDamageable
+    public class Player : MovingUnit, IDamageable
     {
         public override char Symbol => 'P';
         public override EntityType EntityType => EntityType.Player;
         
         public int Health { get; set; } = 100;
         public int MaxHealth { get; set; } = 100;
-        
-        [JsonIgnore]
-        public bool IsAlive => Health > 0;
-        
         public int Score { get; set; } = 0;
+        
+        [JsonIgnore] public bool IsAlive => Health > 0;
        
         public void TakeDamage(int damage)
         {
@@ -29,17 +27,6 @@ namespace Laba3
         public void AddScore(int points)
         {
             Score += points;
-        }
-
-        public string Serialize() => JsonSerializer.Serialize(this);
-
-        public static Player Deserialize(string json)
-        {
-            var obj = JsonSerializer.Deserialize<Player>(json);
-            if (obj == null)
-                throw new ArgumentException("Invalid JSON for Player");
-
-            return obj;
         }
     }
 }

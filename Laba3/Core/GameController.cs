@@ -6,79 +6,94 @@ namespace Laba3
 {
     public class GameController
     {
-        private readonly GameState _state;
-        private readonly IPlayerLocator _playerLocator;
-        private bool _isGameActive = true; 
+        private GameState _state;
+        private readonly IRenderer _renderer;
+        private readonly InputHandler _inputHandler;
+        private readonly ISaveService _saveService;
+        private bool _isRunning = true;
 
-        public GameController(GameState state)
+        // Внедрение зависимостей (Dependency Injection)
+        public GameController(GameState state, IRenderer renderer, ISaveService saveService)
         {
-            _state = state ?? throw new ArgumentNullException(nameof(state)); 
-            _playerLocator = new PlayerLocator(_state.Player);
+            _state = state ?? throw new ArgumentNullException(nameof(state));
+            _renderer = renderer;
+            _saveService = saveService;
+            _inputHandler = new InputHandler(); // Можно тоже вынести в интерфейс
         }
 
         public void Run()
         {
-            // простой игровой цикл
-            while (true)
+            while (_isRunning)
             {
-                Renderer.Draw(_state);
+                _renderer.Draw(_state);
 
-                var key = Console.ReadKey(true).Key;
-
-                int dx = 0, dy = 0;
-                switch (key)
+                if (_state.Player is IDamageable p && !p.IsAlive)
                 {
-                    case ConsoleKey.UpArrow:
-                    case ConsoleKey.W:
-                        dy = -1; break;
-                    case ConsoleKey.DownArrow:
-                    case ConsoleKey.S:
-                        dy = 1; break;
-                    case ConsoleKey.LeftArrow:
-                    case ConsoleKey.A:
-                        dx = -1; break;
-                    case ConsoleKey.RightArrow:
-                    case ConsoleKey.D:
-                        dx = 1; break;
-                    case ConsoleKey.Q:
-                        return;
+                    _renderer.ShowGameOver();
+                    break;
                 }
 
-                if (dx != 0 || dy != 0)
-                {
-                    // вызываем Move у игрока (Player наследует MovingUnit)
-                    _state.Player.Move(dx, dy, _state.Map);
-
-                    // После шага игрока — автосбор сокровищ
-                    foreach (var t in _state.Treasures)
-                        if (!t.Collected && t.X == _state.Player.X && t.Y == _state.Player.Y)
-                            t.Collected = true;
-                }
-
-                // обновление врагов — через интерфейс IUpdatable
-                foreach (var enemy in _state.MovingEnemies)
-                    (enemy as IUpdatable)?.Update(_state.Map, _playerLocator);
+                // Обработка ввода
+                var command = _inputHandler.GetCommand();
+                HandleCommand(command);
             }
         }
 
-        // вспомогательный метод для тестового уровня
-        public static GameState CreateTestLevel()
+        private void HandleCommand(InputHandler.GameCommand command)
         {
-            var state = new GameState(new Map(20, 12));
-            state.Player = new Player { X = 5, Y = 5 };
+            bool playerMoved = false;
 
-            state.Treasures.Clear();
-            state.Treasures.Add(new Treasure { X = 10, Y = 3 });
-            state.Treasures.Add(new Treasure { X = 15, Y = 8 });
+            switch (command)
+            {
+                case InputHandler.GameCommand.Quit:
+                    _isRunning = false;
+                    return;
+                case InputHandler.GameCommand.Save:
+                    _saveService.Save(_state);
+                    _renderer.ShowMessage("Игра сохранена!", ConsoleColor.Green);
+                    return;
+                case InputHandler.GameCommand.Load:
+                    var newState = _saveService.Load();
+                    if (newState != null)
+                    {
+                        _state = newState;
+                        _renderer.ShowMessage("Игра загружена!", ConsoleColor.Green);
+                    }
+                    else
+                    {
+                        _renderer.ShowMessage("Ошибка загрузки!", ConsoleColor.Red);
+                    }
 
-            state.MovingEnemies.Clear();
-            state.MovingEnemies.Add(new MovingEnemy { X = 8, Y = 7 });
-            state.MovingEnemies.Add(new MovingEnemy { X = 12, Y = 4 });
+                    return;
+                case InputHandler.GameCommand.MoveUp:
+                case InputHandler.GameCommand.MoveDown:
+                case InputHandler.GameCommand.MoveLeft:
+                case InputHandler.GameCommand.MoveRight:
+                    var (dx, dy) = _inputHandler.GetMovementVector(command);
+                    // Игрок ходит
+                    if (_state.Player.Move(dx, dy, _state.Map, _state))
+                    {
+                        _state.CollectTreasuresAtPlayerPosition();
+                        playerMoved = true;
+                    }
 
-            state.StaticEnemies.Clear();
-            state.StaticEnemies.Add(new StaticEnemy { X = 14, Y = 6 });
+                    break;
+            }
 
-            return state;
+            // Обновляем мир ТОЛЬКО если игрок походил
+            if (playerMoved)
+            {
+                UpdateWorld();
+            }
+        }
+
+        private void UpdateWorld()
+        {
+            // Вместо класса EntityUpdater просто перебираем список здесь
+            foreach (var entity in _state.UpdatableEntities)
+            {
+                entity.Update(_state.Map, _state, _state);
+            }
         }
     }
 }

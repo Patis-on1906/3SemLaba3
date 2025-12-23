@@ -6,4 +6,5 @@ public interface IEntity
     int Y { get; set; }
     char Symbol { get; }
     EntityType EntityType { get; }
+    bool IsPassable { get; }
 }
