@@ -1,8 +1,8 @@
 namespace Laba3;
 
-public interface IGameState : IPlayerLocator, IEntityCollision
+public interface IGameState : IPlayerLocator
 {
     Map Map { get; }
-    IEnumerable<IEntity> Entities { get; }
-    IEnumerable<IUpdatable> UpdatableEntities { get; }
+    IEntityRepository EntityRepository { get; }
+    DateTime SaveTime { get; }
 }

@@ -1,5 +1,3 @@
-using System;
-using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -8,32 +6,32 @@ namespace Laba3;
 public class JsonSaveService : ISaveService
 {
     private const string FileName = "savegame.json";
-    
+
     private readonly JsonSerializerOptions _options = new()
     {
         WriteIndented = true,
-        IncludeFields = true,
         PropertyNameCaseInsensitive = true,
-        Converters = { new JsonStringEnumConverter() } 
+        Converters = { new JsonStringEnumConverter() }
     };
 
     public void Save(GameState state)
     {
         try
         {
-            state.SaveTime = DateTime.Now;
+            state.UpdateSaveTime();
             string json = JsonSerializer.Serialize(state, _options);
             File.WriteAllText(FileName, json);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error saving: {ex.Message}");
+            throw new SaveLoadException("Ошибка сохранения", ex);
         }
     }
 
     public GameState? Load()
     {
         if (!File.Exists(FileName)) return null;
+
         try
         {
             string json = File.ReadAllText(FileName);
@@ -41,8 +39,12 @@ public class JsonSaveService : ISaveService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading: {ex.Message}");
-            return null;
+            throw new SaveLoadException("Ошибка загрузки", ex);
         }
     }
+}
+
+public class SaveLoadException : Exception
+{
+    public SaveLoadException(string message, Exception inner) : base(message, inner) { }
 }

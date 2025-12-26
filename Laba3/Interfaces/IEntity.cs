@@ -2,8 +2,9 @@ namespace Laba3;
 
 public interface IEntity
 {
-    int X { get; set; }
-    int Y { get; set; }
+    string Id { get; }
+    int X { get; }
+    int Y { get; }
     char Symbol { get; }
     EntityType EntityType { get; }
     bool IsPassable { get; }

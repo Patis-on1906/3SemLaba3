@@ -1,32 +1,68 @@
-using System;
-using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Laba3
 {
     public class MovingEnemy : MovingUnit, IUpdatable
     {
-        private static readonly Random _random = new Random();
+        private static readonly Random _random = new();
+        private int _moveCounter = 0;
+
+        private int _damage;
+        private int _moveSpeed;
 
         public override char Symbol => 'M';
         public override EntityType EntityType => EntityType.MovingEnemy;
+        public override bool IsPassable => false;
 
-        public int Damage { get; set; } = 10;
-        public int MoveSpeed { get; set; } = 2;
-        private int _moveCounter = 0;
+        public int Damage
+        {
+            get => _damage;
+            set
+            {
+                if (value < 0)
+                    throw new ArgumentException("Damage cannot be negative", nameof(value));
+                _damage = value;
+            }
+        }
+
+        public int MoveSpeed
+        {
+            get => _moveSpeed;
+            set
+            {
+                if (value < 1)
+                    throw new ArgumentException("MoveSpeed must be at least 1", nameof(value));
+                _moveSpeed = value;
+            }
+        }
+
+        [JsonConstructor]
+        public MovingEnemy() : base()
+        {
+            Damage = 10;
+            MoveSpeed = 2;
+        }
+
+        public MovingEnemy(int x, int y, int damage = 10, int moveSpeed = 2) : base(x, y)
+        {
+            Damage = damage;
+            MoveSpeed = moveSpeed;
+        }
 
         public void Update(IMapCollision map, IPlayerLocator playerLocator, IEntityCollision entities)
         {
-            // FIX LOGIC: Если игрок далеко (>10 клеток), враг не реагирует
+            if (playerLocator.Player == null) return;
+
             int dist = Math.Abs(playerLocator.PlayerX - X) + Math.Abs(playerLocator.PlayerY - Y);
             if (dist > 10) return;
 
-            // FIX LOGIC: 20% шанс протупить, чтобы игрок мог убежать
             if (_random.NextDouble() < 0.2) return;
 
             // Атака
             if (Math.Abs(playerLocator.PlayerX - X) <= 1 && Math.Abs(playerLocator.PlayerY - Y) <= 1)
             {
-                if (playerLocator.Player is IDamageable p) p.TakeDamage(Damage);
+                if (playerLocator.Player is IDamageable damageable)
+                    damageable.TakeDamage(Damage);
                 return;
             }
 
@@ -42,9 +78,8 @@ namespace Laba3
             if (playerLocator.PlayerY > Y) dy = 1;
             else if (playerLocator.PlayerY < Y) dy = -1;
 
-            // Попытка пойти по одной из осей
-            if (dx != 0 && Move(dx, 0, map, entities)) return;
-            if (dy != 0 && Move(0, dy, map, entities)) return;
+            if (dx != 0 && TryMove(dx, 0, map, entities)) return;
+            if (dy != 0 && TryMove(0, dy, map, entities)) return;
         }
     }
 }
