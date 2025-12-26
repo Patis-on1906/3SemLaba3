@@ -16,7 +16,6 @@ public class InputHandler
 
     public GameCommand GetCommand()
     {
-        // ВАЖНО: ReadKey(true) БЛОКИРУЕТ выполнение до нажатия клавиши!
         var key = Console.ReadKey(true).Key;
 
         return key switch

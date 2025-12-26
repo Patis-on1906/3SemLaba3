@@ -14,7 +14,6 @@ public class JsonSaveService : ISaveService
         WriteIndented = true,
         IncludeFields = true,
         PropertyNameCaseInsensitive = true,
-        // Эта опция позволяет сохранять enum как строки (опционально)
         Converters = { new JsonStringEnumConverter() } 
     };
 
