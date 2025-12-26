@@ -4,9 +4,18 @@ namespace Laba3;
 
 public class Cell
 {
-    public CellType Type { get; set; }
-    public int X { get; set; }
-    public int Y { get; set; }
+    private CellType _type;
+    private readonly int _x;
+    private readonly int _y;
+    
+    public CellType Type 
+    { 
+        get => _type;
+        set => _type = value;
+    }
+    
+    public int X => _x;
+    public int Y => _y;
     
     [JsonIgnore]
     public bool IsWalkable => Type != CellType.Wall;
@@ -16,15 +25,15 @@ public class Cell
     
     public Cell(CellType type, int x, int y)
     {
-        Type = type;
-        X = x;
-        Y = y;
+        _type = type;
+        _x = x;
+        _y = y;
     }
     
     public Cell(int x, int y) : this(CellType.Floor, x, y) { }
 
     [JsonConstructor] 
-    public Cell() { }
+    public Cell() : this(0, 0) { }
     
     public enum CellType { Wall, Floor }
 }
