@@ -56,3 +56,7 @@ public class GameOverException : Exception
 {
     public GameOverException(string message) : base(message) { }
 }
+public class GameVictoryException : Exception
+{
+    public GameVictoryException() : base("Победа!") { }
+}

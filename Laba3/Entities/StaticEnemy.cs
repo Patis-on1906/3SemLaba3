@@ -8,13 +8,13 @@ namespace Laba3
         private int _attackRange;
         private int _attackCooldown;
         private int _attackCounter = 0;
-        
+
         public override char Symbol => 'S';
         public override EntityType EntityType => EntityType.StaticEnemy;
         public override bool IsPassable => false;
-        
-        public int Damage 
-        { 
+
+        public int Damage
+        {
             get => _damage;
             set
             {
@@ -23,9 +23,9 @@ namespace Laba3
                 _damage = value;
             }
         }
-        
-        public int AttackRange 
-        { 
+
+        public int AttackRange
+        {
             get => _attackRange;
             set
             {
@@ -34,9 +34,9 @@ namespace Laba3
                 _attackRange = value;
             }
         }
-        
-        public int AttackCooldown 
-        { 
+
+        public int AttackCooldown
+        {
             get => _attackCooldown;
             set
             {
@@ -45,27 +45,27 @@ namespace Laba3
                 _attackCooldown = value;
             }
         }
-        
+
         [JsonConstructor]
         public StaticEnemy() : base()
         {
             Damage = 15;
-            AttackRange = 2;
+            AttackRange = 1;
             AttackCooldown = 3;
         }
-        
-        public StaticEnemy(int x, int y, int damage = 15, int attackRange = 2, int attackCooldown = 3) 
+
+        public StaticEnemy(int x, int y, int damage = 15, int attackRange = 1, int attackCooldown = 3)
             : base(x, y)
         {
             Damage = damage;
-            AttackRange = attackRange;
+            AttackRange = attackRange; 
             AttackCooldown = attackCooldown;
         }
-        
+
         public void Update(IMapCollision map, IPlayerLocator playerLocator, IEntityCollision entities)
         {
             if (playerLocator.Player == null) return;
-            
+
             if (IsPlayerInRange(playerLocator))
             {
                 if (_attackCounter >= AttackCooldown)
@@ -79,13 +79,13 @@ namespace Laba3
                 }
             }
         }
-        
+
         private bool IsPlayerInRange(IPlayerLocator playerLocator)
         {
             return Math.Abs(playerLocator.PlayerX - X) <= AttackRange &&
                    Math.Abs(playerLocator.PlayerY - Y) <= AttackRange;
         }
-        
+
         private void AttackPlayer(Player player)
         {
             if (player is IDamageable damageable)

@@ -6,14 +6,14 @@ namespace Laba3;
 public class JsonSaveService : ISaveService
 {
     private const string FileName = "savegame.json";
-    
+
     private readonly JsonSerializerOptions _options = new()
     {
         WriteIndented = true,
         PropertyNameCaseInsensitive = true,
         Converters = { new JsonStringEnumConverter() }
     };
-    
+
     public void Save(GameState state)
     {
         try
@@ -27,11 +27,11 @@ public class JsonSaveService : ISaveService
             throw new SaveLoadException("Ошибка сохранения", ex);
         }
     }
-    
+
     public GameState? Load()
     {
         if (!File.Exists(FileName)) return null;
-        
+
         try
         {
             string json = File.ReadAllText(FileName);

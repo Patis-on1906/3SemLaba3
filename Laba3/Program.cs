@@ -6,44 +6,36 @@
         {
             try
             {
-                Console.CursorVisible = false;
-                Console.Title = "Подземелье с сокровищами";
-                
+                Console.WriteLine("=== Тест генератора лабиринта ===");
+
                 var entityFactory = new EntityFactory();
-                var renderer = new ConsoleRenderer();
-                var saveService = new JsonSaveService();
-                var inputHandler = new ConsoleInputHandler();
-                var gameLogic = new GameLogicService(entityFactory);
                 var levelGenerator = new LevelGenerator(entityFactory);
-                
-                GameState gameState;
-                
-                if (args.Contains("--load") || args.Contains("-l"))
+
+                Console.WriteLine("Создаем случайный уровень...");
+                var gameState = levelGenerator.CreateRandomLevel(21, 11);
+
+                Console.WriteLine($"Уровень создан!");
+                Console.WriteLine($"Размер карты: {gameState.Map.Width}x{gameState.Map.Height}");
+                Console.WriteLine($"Позиция игрока: ({gameState.PlayerX}, {gameState.PlayerY})");
+
+                // Простая отрисовка карты в консоли
+                for (int y = 0; y < gameState.Map.Height; y++)
                 {
-                    gameState = saveService.Load() ?? levelGenerator.CreateTestLevel();
+                    for (int x = 0; x < gameState.Map.Width; x++)
+                    {
+                        var cell = gameState.Map.GetCell(x, y);
+                        Console.Write(cell.IsWalkable ? "." : "#");
+                    }
+                    Console.WriteLine();
                 }
-                else if (args.Contains("--random") || args.Contains("-r"))
-                {
-                    gameState = levelGenerator.CreateRandomLevel(60, 30);
-                }
-                else
-                {
-                    gameState = levelGenerator.CreateTestLevel();
-                }
-                
-                var controller = new GameController(
-                    gameState,
-                    renderer,
-                    saveService,
-                    inputHandler,
-                    gameLogic
-                );
-                
-                controller.Run();
+
+                Console.WriteLine("\nНажмите любую клавишу для выхода...");
+                Console.ReadKey();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Критическая ошибка: {ex.Message}");
+                Console.WriteLine($"Ошибка: {ex.Message}");
+                Console.WriteLine($"StackTrace: {ex.StackTrace}");
                 Console.ReadKey();
             }
         }

@@ -11,24 +11,24 @@ namespace Laba3
             { EntityType.StaticEnemy, ConsoleColor.DarkRed },
             { EntityType.Treasure, ConsoleColor.Yellow }
         };
-        
+
         public void Draw(IGameState state)
         {
             Console.SetCursorPosition(0, 0);
-            
+
             var entityMap = new Dictionary<(int, int), IEntity>();
             foreach (var entity in state.EntityRepository.GetAllEntities())
             {
                 if (entity is Treasure t && t.Collected) continue;
-                
+
                 if (!entityMap.ContainsKey((entity.X, entity.Y)))
                 {
                     entityMap.Add((entity.X, entity.Y), entity);
                 }
             }
-            
+
             var sb = new StringBuilder();
-            
+
             for (int y = 0; y < state.Map.Height; y++)
             {
                 for (int x = 0; x < state.Map.Width; x++)
@@ -47,16 +47,16 @@ namespace Laba3
                 }
                 sb.AppendLine();
             }
-            
+
             Console.Write(sb.ToString());
             DrawInfo(state);
         }
-        
+
         private string GetColoredChar(char c, ConsoleColor color)
         {
             return $"\u001b[38;5;{(int)color}m{c}\u001b[0m";
         }
-        
+
         private void DrawInfo(IGameState state)
         {
             Console.WriteLine(new string('=', 30));
@@ -68,7 +68,7 @@ namespace Laba3
             }
             Console.WriteLine("Управление: WASD/Стрелки - движение, J - сохранить, L - загрузить, Q - выход");
         }
-        
+
         public void ShowMessage(string message, ConsoleColor color)
         {
             Console.ForegroundColor = color;
@@ -77,13 +77,13 @@ namespace Laba3
             Console.WriteLine("Нажмите любую клавишу...");
             Console.ReadKey(true);
         }
-        
+
         public void ShowGameOver()
         {
             Console.Clear();
             ShowMessage("=== GAME OVER ===", ConsoleColor.Red);
         }
-        
+
         public void ShowVictory()
         {
             Console.Clear();

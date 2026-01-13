@@ -10,7 +10,7 @@ namespace Laba3
 
         public int Width => _width;
         public int Height => _height;
-        
+
         [JsonIgnore]
         public Cell[,] Grid => _grid;
 

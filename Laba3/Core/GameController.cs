@@ -1,11 +1,10 @@
-﻿
-namespace Laba3
+﻿namespace Laba3
 {
     public class GameController
     {
         private GameState _state;
         private readonly IRenderer _renderer;
-        private readonly IInputHandler _inputHandler; // Используем интерфейс
+        private readonly IInputHandler _inputHandler; 
         private readonly ISaveService _saveService;
         private readonly IGameLogicService _gameLogic;
         private bool _isRunning = true;
@@ -14,7 +13,7 @@ namespace Laba3
             GameState state,
             IRenderer renderer,
             ISaveService saveService,
-            IInputHandler inputHandler, // Принимаем IInputHandler
+            IInputHandler inputHandler, 
             IGameLogicService gameLogic)
         {
             _state = state ?? throw new ArgumentNullException(nameof(state));
@@ -23,7 +22,6 @@ namespace Laba3
             _inputHandler = inputHandler ?? throw new ArgumentNullException(nameof(inputHandler));
             _gameLogic = gameLogic ?? throw new ArgumentNullException(nameof(gameLogic));
         }
-        
         public void Run()
         {
             try
@@ -31,10 +29,10 @@ namespace Laba3
                 while (_isRunning)
                 {
                     _renderer.Draw(_state);
-                    
+
                     var command = _inputHandler.GetCommand();
                     HandleCommand(command);
-                    
+
                     CheckGameState();
                 }
             }
@@ -43,39 +41,44 @@ namespace Laba3
                 _renderer.ShowGameOver();
             }
         }
-        
-        private void HandleCommand(InputCommand command)
+        // Добавить в класс GameController:
+        public void Update()
+        {
+            _gameLogic.UpdateWorld(_state);
+            CheckGameState();
+        }
+
+        public GameState GameState => _state;
+        public IInputHandler InputHandler => _inputHandler;
+
+        public void HandleCommand(InputCommand command)
         {
             switch (command)
             {
                 case InputCommand.Quit:
                     _isRunning = false;
                     break;
-                    
                 case InputCommand.Save:
                     SaveGame();
                     break;
-                    
                 case InputCommand.Load:
                     LoadGame();
                     break;
-                    
                 case InputCommand.None:
                     break;
-                    
                 default:
                     HandleMovement(command);
                     break;
             }
         }
-        
+
         private void HandleMovement(InputCommand command)
         {
             var (dx, dy) = _inputHandler.GetMovementVector(command);
             _gameLogic.ProcessPlayerMovement(_state, dx, dy);
             _gameLogic.UpdateWorld(_state);
         }
-        
+
         private void SaveGame()
         {
             try
@@ -88,7 +91,7 @@ namespace Laba3
                 _renderer.ShowMessage($"Ошибка сохранения: {ex.Message}", ConsoleColor.Red);
             }
         }
-        
+
         private void LoadGame()
         {
             try
@@ -109,13 +112,13 @@ namespace Laba3
                 _renderer.ShowMessage($"Ошибка загрузки: {ex.Message}", ConsoleColor.Red);
             }
         }
-        
+
         private void CheckGameState()
         {
             _gameLogic.CheckGameOver(_state);
             CheckVictory();
         }
-        
+
         private void CheckVictory()
         {
             var allTreasuresCollected = _state.EntityRepository.Treasures.All(t => t.Collected);
