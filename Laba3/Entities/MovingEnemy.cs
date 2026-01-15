@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using System.Text.Json.Serialization;
 
 namespace Laba3
@@ -5,38 +7,36 @@ namespace Laba3
     public class MovingEnemy : MovingUnit, IUpdatable
     {
         private static readonly Random _random = new();
-        private int _moveCounter = 0;
 
-        private int _damage;
-        private int _moveSpeed;
+        [JsonPropertyName("moveCounter")]
+        public int MoveCounter { get; set; } = 0;
 
+        [JsonPropertyName("damage")]
+        public int Damage { get; set; }
+
+        [JsonPropertyName("moveSpeed")]
+        public int MoveSpeed { get; set; }
+
+        [JsonIgnore]
         public override char Symbol => 'M';
+        
+        [JsonIgnore]
         public override EntityType EntityType => EntityType.MovingEnemy;
+        
+        [JsonIgnore]
         public override bool IsPassable => false;
 
-        public int Damage
-        {
-            get => _damage;
-            set
-            {
-                if (value < 0)
-                    throw new ArgumentException("Damage cannot be negative", nameof(value));
-                _damage = value;
-            }
-        }
-
-        public int MoveSpeed
-        {
-            get => _moveSpeed;
-            set
-            {
-                if (value < 1)
-                    throw new ArgumentException("MoveSpeed must be at least 1", nameof(value));
-                _moveSpeed = value;
-            }
-        }
-
         [JsonConstructor]
+        public MovingEnemy(string id, int x, int y, int damage, int moveSpeed, int moveCounter) : base()
+        {
+            Id = id;
+            X = x;
+            Y = y;
+            Damage = Math.Max(damage, 0);
+            MoveSpeed = Math.Max(moveSpeed, 1);
+            MoveCounter = moveCounter;
+        }
+
         public MovingEnemy() : base()
         {
             Damage = 10;
@@ -67,9 +67,9 @@ namespace Laba3
             }
 
             // Движение
-            _moveCounter++;
-            if (_moveCounter < MoveSpeed) return;
-            _moveCounter = 0;
+            MoveCounter++;
+            if (MoveCounter < MoveSpeed) return;
+            MoveCounter = 0;
 
             int dx = 0, dy = 0;
             if (playerLocator.PlayerX > X) dx = 1;

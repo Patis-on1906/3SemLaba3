@@ -1,34 +1,35 @@
+using System;
 using System.Text.Json.Serialization;
 
 namespace Laba3;
 
 public class Treasure : BaseEntity
 {
-    private int _value;
-    private bool _collected;
+    [JsonPropertyName("value")]
+    public int Value { get; set; }
 
+    [JsonPropertyName("collected")]
+    public bool Collected { get; set; }
+
+    [JsonIgnore]
     public override char Symbol => 'T';
+    
+    [JsonIgnore]
     public override EntityType EntityType => EntityType.Treasure;
+    
+    [JsonIgnore]
     public override bool IsPassable => true;
 
-    public int Value
-    {
-        get => _value;
-        set
-        {
-            if (value < 0)
-                throw new ArgumentException("Value cannot be negative", nameof(value));
-            _value = value;
-        }
-    }
-
-    public bool Collected
-    {
-        get => _collected;
-        private set => _collected = value;
-    }
-
     [JsonConstructor]
+    public Treasure(string id, int x, int y, int value, bool collected) : base()
+    {
+        Id = id;
+        X = x;
+        Y = y;
+        Value = Math.Max(value, 0);
+        Collected = collected;
+    }
+
     public Treasure() : base()
     {
         Value = 10;

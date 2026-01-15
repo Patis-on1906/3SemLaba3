@@ -4,18 +4,14 @@ namespace Laba3;
 
 public class Cell
 {
-    private CellType _type;
-    private readonly int _x;
-    private readonly int _y;
+    [JsonPropertyName("type")]
+    public CellType Type { get; set; }
 
-    public CellType Type
-    {
-        get => _type;
-        set => _type = value;
-    }
+    [JsonPropertyName("x")]
+    public int X { get; set; }
 
-    public int X => _x;
-    public int Y => _y;
+    [JsonPropertyName("y")]
+    public int Y { get; set; }
 
     [JsonIgnore]
     public bool IsWalkable => Type != CellType.Wall;
@@ -23,17 +19,21 @@ public class Cell
     [JsonIgnore]
     public char Symbol => IsWalkable ? '.' : '#';
 
+    [JsonConstructor]
     public Cell(CellType type, int x, int y)
     {
-        _type = type;
-        _x = x;
-        _y = y;
+        Type = type;
+        X = x;
+        Y = y;
     }
 
     public Cell(int x, int y) : this(CellType.Floor, x, y) { }
 
-    [JsonConstructor]
     public Cell() : this(0, 0) { }
 
-    public enum CellType { Wall, Floor }
+    public enum CellType 
+    { 
+        Wall = 0, 
+        Floor = 1 
+    }
 }

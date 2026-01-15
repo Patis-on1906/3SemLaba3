@@ -1,52 +1,43 @@
+using System;
 using System.Text.Json.Serialization;
 
 namespace Laba3
 {
     public class StaticEnemy : BaseEntity, IUpdatable
     {
-        private int _damage;
-        private int _attackRange;
-        private int _attackCooldown;
-        private int _attackCounter = 0;
+        [JsonPropertyName("damage")]
+        public int Damage { get; set; }
 
+        [JsonPropertyName("attackRange")]
+        public int AttackRange { get; set; }
+
+        [JsonPropertyName("attackCooldown")]
+        public int AttackCooldown { get; set; }
+
+        [JsonPropertyName("attackCounter")]
+        public int AttackCounter { get; set; } = 0;
+
+        [JsonIgnore]
         public override char Symbol => 'S';
+        
+        [JsonIgnore]
         public override EntityType EntityType => EntityType.StaticEnemy;
+        
+        [JsonIgnore]
         public override bool IsPassable => false;
 
-        public int Damage
-        {
-            get => _damage;
-            set
-            {
-                if (value < 0)
-                    throw new ArgumentException("Damage cannot be negative", nameof(value));
-                _damage = value;
-            }
-        }
-
-        public int AttackRange
-        {
-            get => _attackRange;
-            set
-            {
-                if (value < 1)
-                    throw new ArgumentException("AttackRange must be at least 1", nameof(value));
-                _attackRange = value;
-            }
-        }
-
-        public int AttackCooldown
-        {
-            get => _attackCooldown;
-            set
-            {
-                if (value < 1)
-                    throw new ArgumentException("AttackCooldown must be at least 1", nameof(value));
-                _attackCooldown = value;
-            }
-        }
-
         [JsonConstructor]
+        public StaticEnemy(string id, int x, int y, int damage, int attackRange, int attackCooldown, int attackCounter) : base()
+        {
+            Id = id;
+            X = x;
+            Y = y;
+            Damage = Math.Max(damage, 0);
+            AttackRange = Math.Max(attackRange, 1);
+            AttackCooldown = Math.Max(attackCooldown, 1);
+            AttackCounter = attackCounter;
+        }
+
         public StaticEnemy() : base()
         {
             Damage = 15;
@@ -68,14 +59,14 @@ namespace Laba3
 
             if (IsPlayerInRange(playerLocator))
             {
-                if (_attackCounter >= AttackCooldown)
+                if (AttackCounter >= AttackCooldown)
                 {
                     AttackPlayer(playerLocator.Player);
-                    _attackCounter = 0;
+                    AttackCounter = 0;
                 }
                 else
                 {
-                    _attackCounter++;
+                    AttackCounter++;
                 }
             }
         }

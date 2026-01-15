@@ -215,16 +215,58 @@ namespace Laba3.WPF
             }
         }
 
-        private void LoadGame()
+       private void LoadGame()
         {
             try
             {
-                _gameController?.HandleCommand(InputCommand.Load);
+                _gameTimer?.Stop(); // Останавливаем таймер перед загрузкой
+                
+                var saveService = new JsonSaveService();
+                var loadedState = saveService.Load();
+                
+                if (loadedState == null)
+                {
+                    MessageBox.Show("Сохранение не найдено", "Информация",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    _gameTimer?.Start(); // Возобновляем таймер
+                    return;
+                }
+
+                // Проверяем целостность загруженного состояния
+                if (loadedState.Map == null || loadedState.EntityRepository == null || loadedState.Player == null)
+                {
+                    MessageBox.Show("Ошибка: повреждённое сохранение", "Ошибка",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    _gameTimer?.Start();
+                    return;
+                }
+
+                // Пересоздаём игровой контроллер с загруженным состоянием
+                var entityFactory = new EntityFactory();
+                var inputHandler = new WpfInputHandler();
+                var gameLogic = new GameLogicService(entityFactory);
+
+                _gameController = new GameController(
+                    loadedState,
+                    _renderer,
+                    saveService,
+                    inputHandler,
+                    gameLogic
+                );
+
+                // Рендерим сразу после загрузки
+                _renderer.Render(loadedState);
+
+                MessageBox.Show("Игра успешно загружена!", "Успех",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+
+                _gameTimer?.Start(); // Возобновляем таймер
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Ошибка загрузки: {ex.Message}", "Ошибка",
                     MessageBoxButton.OK, MessageBoxImage.Error);
+                _gameTimer?.Start();
             }
         }
 
