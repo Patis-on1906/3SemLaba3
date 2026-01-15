@@ -1,0 +1,75 @@
+{
+  "Map": {
+    "Width": 50,
+    "Height": 25
+  },
+  "EntityRepository": {
+    "Player": {
+      "Symbol": "P",
+      "EntityType": "Player",
+      "IsPassable": false,
+      "Health": 100,
+      "MaxHealth": 100,
+      "Score": 0,
+      "Id": "97e6acd1-6d5a-462d-a3da-12ad9e72df98",
+      "X": 6,
+      "Y": 7
+    },
+    "MovingEnemies": [
+      {
+        "Symbol": "M",
+        "EntityType": "MovingEnemy",
+        "IsPassable": false,
+        "Damage": 5,
+        "MoveSpeed": 2,
+        "Id": "be1d9163-253c-4e06-88af-c7f2f1ff8ad5",
+        "X": 15,
+        "Y": 5
+      },
+      {
+        "Symbol": "M",
+        "EntityType": "MovingEnemy",
+        "IsPassable": false,
+        "Damage": 12,
+        "MoveSpeed": 2,
+        "Id": "5d68deb0-2d90-42f2-8aa6-892401e80b89",
+        "X": 38,
+        "Y": 6
+      }
+    ],
+    "StaticEnemies": [],
+    "Treasures": [
+      {
+        "Symbol": "T",
+        "EntityType": "Treasure",
+        "IsPassable": true,
+        "Value": 100,
+        "Collected": false,
+        "Id": "9e7e7d46-f362-4268-abe7-9d7d5d12e202",
+        "X": 40,
+        "Y": 5
+      },
+      {
+        "Symbol": "T",
+        "EntityType": "Treasure",
+        "IsPassable": true,
+        "Value": 50,
+        "Collected": false,
+        "Id": "b1799dc8-8ebd-458b-a609-e7cb74f75727",
+        "X": 25,
+        "Y": 13
+      },
+      {
+        "Symbol": "T",
+        "EntityType": "Treasure",
+        "IsPassable": true,
+        "Value": 20,
+        "Collected": false,
+        "Id": "f4756a34-a98c-4dbc-acf8-053d18e8e00e",
+        "X": 5,
+        "Y": 21
+      }
+    ]
+  },
+  "SaveTime": "2026-01-15T19:26:46.9451992+05:00"
+}
