@@ -1,10 +1,8 @@
-using System;
-using System.Linq;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace Laba3
 {
-    public class MovingEnemy : MovingUnit, IUpdatable
+    public class MovingEnemy : BaseEntity, IUpdatable, IMoveable
     {
         private static readonly Random _random = new();
 
@@ -19,10 +17,10 @@ namespace Laba3
 
         [JsonIgnore]
         public override char Symbol => 'M';
-        
+
         [JsonIgnore]
         public override EntityType EntityType => EntityType.MovingEnemy;
-        
+
         [JsonIgnore]
         public override bool IsPassable => false;
 
@@ -49,19 +47,19 @@ namespace Laba3
             MoveSpeed = moveSpeed;
         }
 
-        public void Update(IMapCollision map, IPlayerLocator playerLocator, IEntityCollision entities)
+        public void Update(IMapCollision map, IGameState gameState)
         {
-            if (playerLocator.Player == null) return;
+            if (gameState.Player == null) return;
 
-            int dist = Math.Abs(playerLocator.PlayerX - X) + Math.Abs(playerLocator.PlayerY - Y);
+            int dist = Math.Abs(gameState.PlayerX - X) + Math.Abs(gameState.PlayerY - Y);
             if (dist > 10) return;
 
             if (_random.NextDouble() < 0.2) return;
 
             // Атака
-            if (Math.Abs(playerLocator.PlayerX - X) <= 1 && Math.Abs(playerLocator.PlayerY - Y) <= 1)
+            if (Math.Abs(gameState.PlayerX - X) <= 1 && Math.Abs(gameState.PlayerY - Y) <= 1)
             {
-                if (playerLocator.Player is IDamageable damageable)
+                if (gameState.Player is IDamageable damageable)
                     damageable.TakeDamage(Damage);
                 return;
             }
@@ -72,25 +70,25 @@ namespace Laba3
             MoveCounter = 0;
 
             int dx = 0, dy = 0;
-            if (playerLocator.PlayerX > X) dx = 1;
-            else if (playerLocator.PlayerX < X) dx = -1;
+            if (gameState.PlayerX > X) dx = 1;
+            else if (gameState.PlayerX < X) dx = -1;
 
-            if (playerLocator.PlayerY > Y) dy = 1;
-            else if (playerLocator.PlayerY < Y) dy = -1;
+            if (gameState.PlayerY > Y) dy = 1;
+            else if (gameState.PlayerY < Y) dy = -1;
 
-            if (dx != 0 && TryMove(dx, 0, map, entities)) return;
-            if (dy != 0 && TryMove(0, dy, map, entities)) return;
+            if (dx != 0 && TryMove(dx, 0, map, gameState.EntityRepository)) return;
+            if (dy != 0 && TryMove(0, dy, map, gameState.EntityRepository)) return;
 
             var directions = new (int dx, int dy)[] { (1, 0), (-1, 0), (0, 1), (0, -1) };
             var shuffled = directions.OrderBy(d => _random.Next()).ToList();
 
             foreach (var dir in shuffled)
             {
-                if (TryMove(dir.dx, dir.dy, map, entities)) return;
+                if (TryMove(dir.dx, dir.dy, map, gameState.EntityRepository)) return;
             }
         }
 
-        public new bool TryMove(int dx, int dy, IMapCollision map, IEntityCollision entities)
+        public bool TryMove(int dx, int dy, IMapCollision map, IEntityRepository entities)
         {
             int newX = X + dx;
             int newY = Y + dy;
@@ -98,9 +96,11 @@ namespace Laba3
             if (!map.IsWalkable(newX, newY)) return false;
 
             var entityAtTarget = entities.GetEntityAt(newX, newY);
-
-            if (entityAtTarget != null && !entityAtTarget.IsPassable)
-                return false;
+            if (entityAtTarget != null)
+            {
+                if (!entityAtTarget.IsPassable || entityAtTarget.EntityType == EntityType.Treasure)
+                    return false;
+            }
 
             SetPosition(newX, newY);
             return true;

@@ -1,6 +1,4 @@
-using System;
-
-namespace Laba3;
+﻿namespace Laba3;
 
 public class LevelGenerator : ILevelGenerator
 {

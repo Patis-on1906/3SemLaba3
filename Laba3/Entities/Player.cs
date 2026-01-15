@@ -1,9 +1,8 @@
-using System;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace Laba3
 {
-    public class Player : MovingUnit, IDamageable
+    public class Player : BaseEntity, IMoveable, IDamageable
     {
         [JsonPropertyName("health")]
         public int Health { get; set; }
@@ -16,10 +15,10 @@ namespace Laba3
 
         [JsonIgnore]
         public override char Symbol => 'P';
-        
+
         [JsonIgnore]
         public override EntityType EntityType => EntityType.Player;
-        
+
         [JsonIgnore]
         public override bool IsPassable => false;
 
@@ -49,6 +48,21 @@ namespace Laba3
             MaxHealth = health;
             Health = MaxHealth;
             Score = 0;
+        }
+
+        public bool TryMove(int dx, int dy, IMapCollision map, IEntityRepository entities)
+        {
+            int newX = X + dx;
+            int newY = Y + dy;
+
+            if (!map.IsWalkable(newX, newY)) return false;
+
+            var entityAtTarget = entities.GetEntityAt(newX, newY);
+            if (entityAtTarget != null && !entityAtTarget.IsPassable)
+                return false;
+
+            SetPosition(newX, newY);
+            return true;
         }
 
         public void TakeDamage(int damage)

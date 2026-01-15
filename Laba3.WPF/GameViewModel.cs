@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Laba3;
 
 namespace Laba3.WPF.ViewModels
 {

@@ -1,5 +1,4 @@
 ﻿using System.Windows.Input;
-using Laba3;
 
 namespace Laba3.WPF
 {

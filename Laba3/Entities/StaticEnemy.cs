@@ -1,5 +1,4 @@
-using System;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace Laba3
 {
@@ -19,10 +18,10 @@ namespace Laba3
 
         [JsonIgnore]
         public override char Symbol => 'S';
-        
+
         [JsonIgnore]
         public override EntityType EntityType => EntityType.StaticEnemy;
-        
+
         [JsonIgnore]
         public override bool IsPassable => false;
 
@@ -49,19 +48,19 @@ namespace Laba3
             : base(x, y)
         {
             Damage = damage;
-            AttackRange = attackRange; 
+            AttackRange = attackRange;
             AttackCooldown = attackCooldown;
         }
 
-        public void Update(IMapCollision map, IPlayerLocator playerLocator, IEntityCollision entities)
+        public void Update(IMapCollision map, IGameState gameState)
         {
-            if (playerLocator.Player == null) return;
+            if (gameState.Player == null) return;
 
-            if (IsPlayerInRange(playerLocator))
+            if (IsPlayerInRange(gameState))
             {
                 if (AttackCounter >= AttackCooldown)
                 {
-                    AttackPlayer(playerLocator.Player);
+                    AttackPlayer(gameState.Player);
                     AttackCounter = 0;
                 }
                 else
@@ -71,10 +70,10 @@ namespace Laba3
             }
         }
 
-        private bool IsPlayerInRange(IPlayerLocator playerLocator)
+        private bool IsPlayerInRange(IGameState gameState)
         {
-            return Math.Abs(playerLocator.PlayerX - X) <= AttackRange &&
-                   Math.Abs(playerLocator.PlayerY - Y) <= AttackRange;
+            return Math.Abs(gameState.PlayerX - X) <= AttackRange &&
+                   Math.Abs(gameState.PlayerY - Y) <= AttackRange;
         }
 
         private void AttackPlayer(Player player)

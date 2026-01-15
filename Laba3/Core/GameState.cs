@@ -1,5 +1,4 @@
-using System;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace Laba3;
 
@@ -34,7 +33,7 @@ public class GameState : IGameState
         SaveTime = saveTime;
     }
 
-    public GameState(Map map, EntityRepository entityRepository) 
+    public GameState(Map map, EntityRepository entityRepository)
         : this(map, entityRepository, DateTime.Now)
     {
     }

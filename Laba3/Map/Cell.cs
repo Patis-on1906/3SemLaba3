@@ -1,4 +1,4 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace Laba3;
 
@@ -31,9 +31,9 @@ public class Cell
 
     public Cell() : this(0, 0) { }
 
-    public enum CellType 
-    { 
-        Wall = 0, 
-        Floor = 1 
+    public enum CellType
+    {
+        Wall = 0,
+        Floor = 1
     }
 }

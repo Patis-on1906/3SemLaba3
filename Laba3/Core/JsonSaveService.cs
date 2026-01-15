@@ -1,9 +1,7 @@
-using System;
-using System.IO;
+﻿using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Diagnostics;
 
 namespace Laba3;
 
@@ -69,7 +67,7 @@ public class JsonSaveService : ISaveService
         try
         {
             string json = File.ReadAllText(FileName, Encoding.UTF8);
-            
+
             if (string.IsNullOrWhiteSpace(json))
             {
                 Debug.WriteLine("Файл сохранения пуст");
@@ -77,7 +75,7 @@ public class JsonSaveService : ISaveService
             }
 
             var state = JsonSerializer.Deserialize<GameState>(json, _options);
-            
+
             if (state == null)
             {
                 Debug.WriteLine("Не удалось десериализовать состояние игры");
@@ -94,7 +92,7 @@ public class JsonSaveService : ISaveService
             Debug.WriteLine($"Сокровищ: {state.EntityRepository?.Treasures?.Count}");
             Debug.WriteLine($"Врагов движущихся: {state.EntityRepository?.MovingEnemies?.Count}");
             Debug.WriteLine($"Врагов статичных: {state.EntityRepository?.StaticEnemies?.Count}");
-            
+
             return state;
         }
         catch (JsonException ex)

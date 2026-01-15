@@ -1,8 +1,13 @@
-namespace Laba3;
+﻿namespace Laba3;
 
-public interface IGameState : IPlayerLocator
+public interface IGameState
 {
     Map Map { get; }
     IEntityRepository EntityRepository { get; }
     DateTime SaveTime { get; }
+
+    // Добавляем эти свойства
+    Player Player { get; }
+    int PlayerX { get; }
+    int PlayerY { get; }
 }

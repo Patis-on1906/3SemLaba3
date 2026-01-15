@@ -1,4 +1,4 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace Laba3
 {
@@ -19,7 +19,7 @@ namespace Laba3
             get
             {
                 if (_grid == null) return Array.Empty<Cell>();
-                
+
                 var flat = new Cell[Width * Height];
                 for (int y = 0; y < Height; y++)
                 {
@@ -33,7 +33,7 @@ namespace Laba3
             set
             {
                 if (value == null || value.Length == 0) return;
-                
+
                 _grid = new Cell[Width, Height];
                 for (int i = 0; i < value.Length && i < Width * Height; i++)
                 {
@@ -54,7 +54,7 @@ namespace Laba3
             Width = width;
             Height = height;
             _grid = new Cell[width, height];
-            
+
             if (cells != null && cells.Length > 0)
             {
                 Cells = cells; // Используем setter для восстановления массива

@@ -1,5 +1,4 @@
-using System;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace Laba3;
 
@@ -13,10 +12,10 @@ public class Treasure : BaseEntity
 
     [JsonIgnore]
     public override char Symbol => 'T';
-    
+
     [JsonIgnore]
     public override EntityType EntityType => EntityType.Treasure;
-    
+
     [JsonIgnore]
     public override bool IsPassable => true;
 

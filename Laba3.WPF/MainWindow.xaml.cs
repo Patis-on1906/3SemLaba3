@@ -1,10 +1,7 @@
-﻿using System;
+﻿using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Threading;
-using Laba3;
-using System.Diagnostics;
 
 namespace Laba3.WPF
 {
@@ -53,7 +50,7 @@ namespace Laba3.WPF
                 var levelGenerator = new LevelGenerator(entityFactory);
 
                 Debug.WriteLine("Creating random level...");
-                var gameState = levelGenerator.CreateRandomLevel(61, 31); 
+                var gameState = levelGenerator.CreateRandomLevel(46, 21);
                 Debug.WriteLine($"Level created. Map size: {gameState.Map.Width}x{gameState.Map.Height}");
                 Debug.WriteLine($"Player position: ({gameState.PlayerX}, {gameState.PlayerY})");
                 Debug.WriteLine($"Entities count: {gameState.EntityRepository.GetAllEntities().Count()}");
@@ -72,7 +69,7 @@ namespace Laba3.WPF
                 Debug.WriteLine($"InitializeGame error: {ex}");
                 MessageBox.Show($"Ошибка инициализации игры: {ex.Message}\n{ex.StackTrace}", "Ошибка",
                     MessageBoxButton.OK, MessageBoxImage.Error);
-                throw; 
+                throw;
             }
         }
 
@@ -81,7 +78,7 @@ namespace Laba3.WPF
             try
             {
                 _gameTimer = new DispatcherTimer();
-                _gameTimer.Interval = TimeSpan.FromMilliseconds(16); 
+                _gameTimer.Interval = TimeSpan.FromMilliseconds(16);
                 _gameTimer.Tick += GameTimer_Tick;
                 _gameTimer.Start();
                 Debug.WriteLine("Game timer started");
@@ -113,7 +110,7 @@ namespace Laba3.WPF
                     }
                     else
                     {
-                        Close();  
+                        Close();
                     }
                 }
             }
@@ -136,7 +133,7 @@ namespace Laba3.WPF
                 _gameTimer.Stop();
                 MessageBox.Show("Игра окончена!", "Game Over",
                     MessageBoxButton.OK, MessageBoxImage.Information);
-                Close();  
+                Close();
             }
         }
 
@@ -215,15 +212,15 @@ namespace Laba3.WPF
             }
         }
 
-       private void LoadGame()
+        private void LoadGame()
         {
             try
             {
                 _gameTimer?.Stop(); // Останавливаем таймер перед загрузкой
-                
+
                 var saveService = new JsonSaveService();
                 var loadedState = saveService.Load();
-                
+
                 if (loadedState == null)
                 {
                     MessageBox.Show("Сохранение не найдено", "Информация",
@@ -306,7 +303,7 @@ namespace Laba3.WPF
                 var gameLogic = new GameLogicService(entityFactory);
                 var levelGenerator = new LevelGenerator(entityFactory);
 
-                var gameState = levelGenerator.CreateRandomLevel(41, 21);
+                var gameState = levelGenerator.CreateRandomLevel(40, 15);
 
                 _gameController = new GameController(
                     gameState,

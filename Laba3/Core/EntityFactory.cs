@@ -1,4 +1,4 @@
-namespace Laba3;
+﻿namespace Laba3;
 
 public class EntityFactory : IEntityFactory
 {
@@ -9,7 +9,7 @@ public class EntityFactory : IEntityFactory
 
     public MovingEnemy CreateMovingEnemy(int x, int y, int damage = 10)
     {
-        return new MovingEnemy(x, y, damage, 10); 
+        return new MovingEnemy(x, y, damage, 6);
     }
 
     public StaticEnemy CreateStaticEnemy(int x, int y, int damage = 15, int attackRange = 2, int attackCooldown = 3)

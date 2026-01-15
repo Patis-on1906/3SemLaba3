@@ -4,16 +4,17 @@
     {
         private GameState _state;
         private readonly IRenderer _renderer;
-        private readonly IInputHandler _inputHandler; 
+        private readonly IInputHandler _inputHandler;
         private readonly ISaveService _saveService;
         private readonly IGameLogicService _gameLogic;
+        private readonly GameStateChecker _stateChecker;
         private bool _isRunning = true;
 
         public GameController(
             GameState state,
             IRenderer renderer,
             ISaveService saveService,
-            IInputHandler inputHandler, 
+            IInputHandler inputHandler,
             IGameLogicService gameLogic)
         {
             _state = state ?? throw new ArgumentNullException(nameof(state));
@@ -21,7 +22,9 @@
             _saveService = saveService ?? throw new ArgumentNullException(nameof(saveService));
             _inputHandler = inputHandler ?? throw new ArgumentNullException(nameof(inputHandler));
             _gameLogic = gameLogic ?? throw new ArgumentNullException(nameof(gameLogic));
+            _stateChecker = new GameStateChecker();
         }
+
         public void Run()
         {
             try
@@ -41,7 +44,7 @@
                 _renderer.ShowGameOver();
             }
         }
-        // Добавить в класс GameController:
+
         public void Update()
         {
             _gameLogic.UpdateWorld(_state);
@@ -116,17 +119,21 @@
         private void CheckGameState()
         {
             _gameLogic.CheckGameOver(_state);
-            CheckVictory();
-        }
 
-        private void CheckVictory()
-        {
-            var allTreasuresCollected = _state.EntityRepository.Treasures.All(t => t.Collected);
-            if (allTreasuresCollected && _state.Player?.IsAlive == true)
+            if (_stateChecker.CheckVictory(_state))
             {
                 _renderer.ShowVictory();
                 _isRunning = false;
             }
+        }
+    }
+
+    public class GameStateChecker
+    {
+        public bool CheckVictory(GameState state)
+        {
+            return state.EntityRepository.Treasures.All(t => t.Collected)
+                   && state.Player?.IsAlive == true;
         }
     }
 }

@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace Laba3;
 
 public class EntityRepository : IEntityRepository
 {
     [JsonPropertyName("player")]
-    public Player Player { get; set; }  // Изменено на set вместо private set
+    public Player Player { get; set; }
 
     [JsonPropertyName("movingEnemies")]
     public List<MovingEnemy> MovingEnemiesList { get; set; } = new();
@@ -29,7 +26,7 @@ public class EntityRepository : IEntityRepository
     public IReadOnlyList<Treasure> Treasures => TreasuresList;
 
     [JsonConstructor]
-    public EntityRepository(Player player, List<MovingEnemy> movingEnemiesList, 
+    public EntityRepository(Player player, List<MovingEnemy> movingEnemiesList,
         List<StaticEnemy> staticEnemiesList, List<Treasure> treasuresList)
     {
         Player = player;
@@ -75,11 +72,27 @@ public class EntityRepository : IEntityRepository
         return false;
     }
 
+    // Реализация интерфейса IEntityRepository.HasEntityAt
+    public bool HasEntityAt(int x, int y, IEntity exclude = null)
+    {
+        return GetAllEntities()
+            .Any(e => e.X == x && e.Y == y && e != exclude && !e.IsPassable);
+    }
+
+    // Реализация интерфейса IEntityRepository.GetEntityAt
+    public IEntity GetEntityAt(int x, int y)
+    {
+        return GetAllEntities()
+            .FirstOrDefault(e => e.X == x && e.Y == y);
+    }
+
     public IEnumerable<IEntity> GetAllEntities()
     {
         var entities = new List<IEntity>();
 
-        if (Player != null) entities.Add(Player);
+        if (Player != null)
+            entities.Add(Player);
+
         entities.AddRange(MovingEnemiesList);
         entities.AddRange(StaticEnemiesList);
         entities.AddRange(TreasuresList.Where(t => !t.Collected));
@@ -89,7 +102,14 @@ public class EntityRepository : IEntityRepository
 
     public IEnumerable<IUpdatable> GetUpdatableEntities()
     {
-        return MovingEnemiesList.Cast<IUpdatable>()
-            .Concat(StaticEnemiesList.Cast<IUpdatable>());
+        var updatables = new List<IUpdatable>();
+
+        // MovingEnemy implements IUpdatable
+        updatables.AddRange(MovingEnemiesList);
+
+        // StaticEnemy implements IUpdatable
+        updatables.AddRange(StaticEnemiesList);
+
+        return updatables;
     }
 }
