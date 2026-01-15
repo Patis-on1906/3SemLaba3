@@ -17,8 +17,7 @@
                 Console.WriteLine($"Уровень создан!");
                 Console.WriteLine($"Размер карты: {gameState.Map.Width}x{gameState.Map.Height}");
                 Console.WriteLine($"Позиция игрока: ({gameState.PlayerX}, {gameState.PlayerY})");
-
-                // Простая отрисовка карты в консоли
+                
                 for (int y = 0; y < gameState.Map.Height; y++)
                 {
                     for (int x = 0; x < gameState.Map.Width; x++)

@@ -36,8 +36,7 @@ public class LevelGenerator : ILevelGenerator
         map.SetCellType(6, 15, Cell.CellType.Wall);
         map.SetCellType(10, 15, Cell.CellType.Wall);
         CreateMiniMaze(map, 22, 11);
-
-        // Сущности - гарантируем, что они на проходимых клетках
+        
         // Проверяем, что позиции проходимы
         if (!map.IsWalkable(6, 5)) map.SetCellType(6, 5, Cell.CellType.Floor);
         if (!map.IsWalkable(40, 5)) map.SetCellType(40, 5, Cell.CellType.Floor);

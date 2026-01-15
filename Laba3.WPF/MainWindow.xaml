@@ -28,8 +28,7 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-
-        <!-- Меню -->
+        
         <Menu Grid.Row="0">
             <MenuItem Header="Файл">
                 <MenuItem Header="Новая игра" Click="NewGame_Click"/>
@@ -46,8 +45,7 @@
                 </MenuItem>
             </MenuItem>
         </Menu>
-
-        <!-- Игровое поле -->
+        
         <ScrollViewer Grid.Row="1" 
                       HorizontalScrollBarVisibility="Auto" 
                       VerticalScrollBarVisibility="Auto"
@@ -56,11 +54,9 @@
                     Width="2000" 
                     Height="1500"
                     Background="Black">
-                <!-- Карта и сущности будут отрисовываться здесь -->
             </Canvas>
         </ScrollViewer>
-
-        <!-- Панель информации -->
+        
         <Border Grid.Row="2" 
                 Background="#1E1E1E" 
                 Padding="10">

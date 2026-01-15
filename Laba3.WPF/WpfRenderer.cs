@@ -22,10 +22,10 @@ namespace Laba3.WPF
 
             _entityBrushes = new Brush[]
             {
-                Brushes.Green,      // Player
-                Brushes.Red,        // MovingEnemy
-                Brushes.DarkRed,    // StaticEnemy
-                Brushes.Yellow      // Treasure
+                Brushes.Green,      
+                Brushes.Red,       
+                Brushes.DarkRed,    
+                Brushes.Yellow     
             };
         }
 
@@ -37,23 +37,19 @@ namespace Laba3.WPF
         public void Render(IGameState state)
         {
             if (state?.Map == null) return;
-
-            // Очищаем канвас
+            
             _canvas.Children.Clear();
-
-            // Устанавливаем размер канваса в зависимости от карты
+            
             _canvas.Width = state.Map.Width * _tileSize;
             _canvas.Height = state.Map.Height * _tileSize;
-
-            // Отрисовка карты
+            
             for (int y = 0; y < state.Map.Height; y++)
             {
                 for (int x = 0; x < state.Map.Width; x++)
                 {
                     var cell = state.Map.GetCell(x, y);
                     var isWall = cell?.IsWalkable == false;
-
-                    // Создаем клетку
+                    
                     var rect = new Rectangle
                     {
                         Width = _tileSize,
@@ -84,8 +80,7 @@ namespace Laba3.WPF
                     }
                 }
             }
-
-            // Отрисовка сущностей
+            
             foreach (var entity in state.EntityRepository.GetAllEntities())
             {
                 if (entity is Treasure t && t.Collected) continue;
@@ -104,8 +99,7 @@ namespace Laba3.WPF
                 Canvas.SetLeft(ellipse, entity.X * _tileSize + 4);
                 Canvas.SetTop(ellipse, entity.Y * _tileSize + 4);
                 _canvas.Children.Add(ellipse);
-
-                // Текст символа сущности
+                
                 var text = new TextBlock
                 {
                     Text = entity.Symbol.ToString(),

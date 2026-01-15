@@ -21,7 +21,6 @@ public class JsonSaveService : ISaveService
 
     public JsonSaveService()
     {
-        // Конструктор без параметров
     }
 
     public void Save(GameState state)

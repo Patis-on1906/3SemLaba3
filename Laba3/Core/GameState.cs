@@ -5,13 +5,13 @@ namespace Laba3;
 public class GameState : IGameState
 {
     [JsonPropertyName("map")]
-    public Map Map { get; set; }  // Изменено на set
+    public Map Map { get; set; }
 
     [JsonPropertyName("entityRepository")]
-    public EntityRepository EntityRepository { get; set; }  // Изменено на set
+    public EntityRepository EntityRepository { get; set; }
 
     [JsonPropertyName("saveTime")]
-    public DateTime SaveTime { get; set; }  // Изменено на set
+    public DateTime SaveTime { get; set; }
 
     [JsonIgnore]
     public Player Player => EntityRepository?.Player;

@@ -71,19 +71,16 @@ public class EntityRepository : IEntityRepository
         }
         return false;
     }
-
-    // Реализация интерфейса IEntityRepository.HasEntityAt
+    
     public bool HasEntityAt(int x, int y, IEntity exclude = null)
     {
         return GetAllEntities()
             .Any(e => e.X == x && e.Y == y && e != exclude && !e.IsPassable);
     }
-
-    // Реализация интерфейса IEntityRepository.GetEntityAt
+    
     public IEntity GetEntityAt(int x, int y)
     {
-        return GetAllEntities()
-            .FirstOrDefault(e => e.X == x && e.Y == y);
+        return GetAllEntities().FirstOrDefault(e => e.X == x && e.Y == y);
     }
 
     public IEnumerable<IEntity> GetAllEntities()
@@ -103,11 +100,9 @@ public class EntityRepository : IEntityRepository
     public IEnumerable<IUpdatable> GetUpdatableEntities()
     {
         var updatables = new List<IUpdatable>();
-
-        // MovingEnemy implements IUpdatable
+        
         updatables.AddRange(MovingEnemiesList);
-
-        // StaticEnemy implements IUpdatable
+        
         updatables.AddRange(StaticEnemiesList);
 
         return updatables;

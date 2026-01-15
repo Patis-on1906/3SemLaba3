@@ -11,8 +11,7 @@ namespace Laba3
 
         [JsonPropertyName("height")]
         public int Height { get; private set; }
-
-        // Свойство для сериализации - преобразуем 2D массив в 1D
+        
         [JsonPropertyName("cells")]
         public Cell[] Cells
         {
@@ -43,8 +42,7 @@ namespace Laba3
                 }
             }
         }
-
-        // Конструктор для JSON десериализации
+        
         [JsonConstructor]
         public Map(int width, int height, Cell[] cells)
         {
@@ -57,15 +55,14 @@ namespace Laba3
 
             if (cells != null && cells.Length > 0)
             {
-                Cells = cells; // Используем setter для восстановления массива
+                Cells = cells;
             }
             else
             {
                 GenerateMap();
             }
         }
-
-        // Обычный конструктор
+        
         public Map(int width, int height)
         {
             if (width < 3 || height < 3)
