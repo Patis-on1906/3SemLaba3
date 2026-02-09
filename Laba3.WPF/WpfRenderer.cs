@@ -8,16 +8,14 @@ namespace Laba3.WPF
     public class WpfRenderer : IRenderer
     {
         private readonly Canvas _canvas;
-        private readonly TextBlock _infoText;
         private int _tileSize;
 
         private readonly Brush[] _entityBrushes;
         private readonly Typeface _typeface = new Typeface("Consolas");
 
-        public WpfRenderer(Canvas canvas, TextBlock infoText, int tileSize = 32)
+        public WpfRenderer(Canvas canvas, int tileSize = 32)
         {
             _canvas = canvas;
-            _infoText = infoText;
             _tileSize = tileSize;
 
             _entityBrushes = new Brush[]
@@ -132,17 +130,6 @@ namespace Laba3.WPF
                 }
             }
 
-            UpdateInfoText(state);
-        }
-
-        private void UpdateInfoText(IGameState state)
-        {
-            if (state.Player != null)
-            {
-                _infoText.Text = $"HP: {state.Player.Health}/{state.Player.MaxHealth} | " +
-                                $"Score: {state.Player.Score} | " +
-                                $"Time: {state.SaveTime:HH:mm:ss}";
-            }
         }
 
         public void ShowMessage(string message, ConsoleColor color)
