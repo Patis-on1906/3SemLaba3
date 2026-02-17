@@ -1,9 +1,10 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
 
-namespace Laba3.WPF.ViewModels
+namespace Laba3.WPF
 {
     public class GameViewModel : INotifyPropertyChanged
     {
@@ -90,14 +91,8 @@ namespace Laba3.WPF.ViewModels
 
         private void InitializeGame()
         {
-            var loadedState = _saveService.Load();
-
-            if (loadedState?.Map == null || loadedState.EntityRepository == null || loadedState.Player == null)
-            {
-                loadedState = _levelGenerator.CreateRandomLevel(46, 21);
-            }
-
-            ReplaceGameController(loadedState);
+            var newState = _levelGenerator.CreateRandomLevel(46, 21);
+            ReplaceGameController(newState);
         }
 
         private void ReplaceGameController(GameState state)
@@ -124,13 +119,13 @@ namespace Laba3.WPF.ViewModels
                 if (_stateChecker.CheckVictory(_gameController.GameState))
                 {
                     _gameTimer.Stop();
+                    _renderer.ShowVictory();
                 }
             }
             catch (GameOverException)
             {
                 _gameTimer.Stop();
                 _renderer.ShowGameOver();
-                RequestClose?.Invoke();
             }
         }
 
@@ -162,8 +157,16 @@ namespace Laba3.WPF.ViewModels
 
         private void NewGame()
         {
+            // Останавливаем таймер на время создания новой игры
+            _gameTimer.Stop();
+    
             var newState = _levelGenerator.CreateRandomLevel(46, 21);
             ReplaceGameController(newState);
+    
+            // Запускаем таймер
+            _gameTimer.Start();
+    
+            _renderer.Draw(_gameController.GameState);
         }
 
         private void SaveGame()
@@ -190,11 +193,21 @@ namespace Laba3.WPF.ViewModels
                 // Avoid blocking closing flow.
             }
         }
-
+        
         private void LoadGame()
         {
             try
             {
+                // Спрашиваем подтверждение, так как текущий прогресс будет потерян
+                var result = MessageBox.Show(
+                    "Загрузить сохранение? Текущий прогресс будет потерян.", 
+                    "Подтверждение", 
+                    MessageBoxButton.YesNo, 
+                    MessageBoxImage.Question);
+            
+                if (result != MessageBoxResult.Yes)
+                    return;
+            
                 _gameTimer.Stop();
                 var loadedState = _saveService.Load();
 

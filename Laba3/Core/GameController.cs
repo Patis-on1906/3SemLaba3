@@ -25,25 +25,25 @@
             _stateChecker = new GameStateChecker();
         }
 
-        public void Run()
-        {
-            try
-            {
-                while (_isRunning)
-                {
-                    _renderer.Draw(_state);
-
-                    var command = _inputHandler.GetCommand();
-                    HandleCommand(command);
-
-                    CheckGameState();
-                }
-            }
-            catch (GameOverException)
-            {
-                _renderer.ShowGameOver();
-            }
-        }
+        // public void Run()
+        // {
+        //     try
+        //     {
+        //         while (_isRunning)
+        //         {
+        //             _renderer.Draw(_state);
+        //
+        //             var command = _inputHandler.GetCommand();
+        //             HandleCommand(command);
+        //
+        //             CheckGameState();
+        //         }
+        //     }
+        //     catch (GameOverException)
+        //     {
+        //         _renderer.ShowGameOver();
+        //     }
+        // }
 
         public void Update()
         {

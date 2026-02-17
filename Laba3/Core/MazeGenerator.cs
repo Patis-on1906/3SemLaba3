@@ -31,7 +31,7 @@
 
         private void PlacePlayer(GameState state)
         {
-            var playerPos = FindSpawnPosition(state.Map, state.EntityRepository);
+            var playerPos = FindSpawnPosition(state.Map, state.EntityRepository, 0); // 0 - без проверки дистанции для игрока
             state.EntityRepository.SetPlayer(_entityFactory.CreatePlayer(playerPos.x, playerPos.y));
         }
 
@@ -40,7 +40,8 @@
             int count = _random.Next(minCount, maxCount + 1);
             for (int i = 0; i < count; i++)
             {
-                var pos = FindSpawnPosition(state.Map, state.EntityRepository);
+                // Сокровища могут быть чуть ближе к игроку (минимум 2 клетки)
+                var pos = FindSpawnPosition(state.Map, state.EntityRepository, 2);
                 state.EntityRepository.AddTreasure(
                     _entityFactory.CreateTreasure(pos.x, pos.y, _random.Next(10, 50))
                 );
@@ -52,7 +53,9 @@
             int count = _random.Next(minCount, maxCount + 1);
             for (int i = 0; i < count; i++)
             {
-                var pos = FindSpawnPosition(state.Map, state.EntityRepository);
+                // Проверяем дистанцию от игрока (минимум 4 клетки для врагов)
+                var pos = FindSpawnPosition(state.Map, state.EntityRepository, 4);
+        
                 if (_random.Next(100) < 60)
                 {
                     state.EntityRepository.AddMovingEnemy(
@@ -68,15 +71,42 @@
             }
         }
 
-        private (int x, int y) FindSpawnPosition(Map map, IEntityRepository entities)
+        private (int x, int y) FindSpawnPosition(Map map, IEntityRepository entities, int minDistanceFromPlayer = 3)
         {
             var walkablePositions = GetWalkablePositions(map).ToList();
-            var validPositions = walkablePositions
+    
+            // Если есть игрок, проверяем дистанцию до него
+            if (entities.Player != null)
+            {
+                var validPositions = walkablePositions
+                    .Where(pos => !entities.HasEntityAt(pos.x, pos.y))
+                    .Where(pos => Math.Abs(pos.x - entities.Player.X) + Math.Abs(pos.y - entities.Player.Y) >= minDistanceFromPlayer)
+                    .ToList();
+
+                return validPositions.Count > 0
+                    ? validPositions[_random.Next(validPositions.Count)]
+                    : GetFallbackPosition(walkablePositions, entities);
+            }
+    
+            // Если игрока нет, используем обычную логику
+            var positions = walkablePositions
                 .Where(pos => !entities.HasEntityAt(pos.x, pos.y))
                 .ToList();
 
-            return validPositions.Count > 0
-                ? validPositions[_random.Next(validPositions.Count)]
+            return positions.Count > 0
+                ? positions[_random.Next(positions.Count)]
+                : walkablePositions[_random.Next(walkablePositions.Count)];
+        }
+
+        private (int x, int y) GetFallbackPosition(List<(int x, int y)> walkablePositions, IEntityRepository entities)
+        {
+            // Пытаемся найти любую свободную позицию
+            var anyFree = walkablePositions
+                .Where(pos => !entities.HasEntityAt(pos.x, pos.y))
+                .ToList();
+        
+            return anyFree.Count > 0
+                ? anyFree[_random.Next(anyFree.Count)]
                 : walkablePositions[_random.Next(walkablePositions.Count)];
         }
 

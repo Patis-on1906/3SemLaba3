@@ -19,10 +19,6 @@ public class JsonSaveService : ISaveService
         Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
 
-    public JsonSaveService()
-    {
-    }
-
     public void Save(GameState state)
     {
         try
