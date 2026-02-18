@@ -1,4 +1,7 @@
-﻿namespace Laba3;
+﻿using System;
+using System.Linq;
+
+namespace Laba3;
 
 public class GameLogicService : IGameLogicService
 {
@@ -43,6 +46,12 @@ public class GameLogicService : IGameLogicService
         {
             throw new GameOverException("Игрок погиб");
         }
+    }
+
+    public bool CheckVictory(GameState state)
+    {
+        return state.EntityRepository.Treasures.All(t => t.Collected)
+               && state.Player?.IsAlive == true;
     }
 }
 

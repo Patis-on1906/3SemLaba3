@@ -5,4 +5,5 @@ public interface IGameLogicService
     void ProcessPlayerMovement(GameState state, int dx, int dy);
     void UpdateWorld(GameState state);
     void CheckGameOver(GameState state);
+    bool CheckVictory(GameState state);
 }

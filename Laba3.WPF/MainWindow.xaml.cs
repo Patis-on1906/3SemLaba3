@@ -1,5 +1,4 @@
-using System.Windows;
-using Laba3.WPF.ViewModels;
+﻿using System.Windows;
 
 namespace Laba3.WPF
 {
@@ -18,6 +17,15 @@ namespace Laba3.WPF
 
             DataContext = _viewModel;
             Closing += (_, _) => _viewModel.HandleClosing();
+    
+            // Добавляем обработчик для случая, если пользователь закроет окно после победы
+            Closed += (_, _) => 
+            {
+                if (_viewModel != null)
+                {
+                    _viewModel.HandleClosing();
+                }
+            };
         }
     }
 }

@@ -1,106 +1,146 @@
-﻿namespace Laba3;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
-public class LevelGenerator : ILevelGenerator
+namespace Laba3
 {
-    private readonly IEntityFactory _entityFactory;
-    private readonly MazeGenerator _mazeGenerator;
-
-    public LevelGenerator(IEntityFactory entityFactory = null)
+    public class LevelGenerator : ILevelGenerator
     {
-        _entityFactory = entityFactory ?? new EntityFactory();
-        _mazeGenerator = new MazeGenerator(entityFactory);
-    }
+        private readonly Random _random = new Random();
+        private readonly IEntityFactory _entityFactory;
 
-    public GameState CreateTestLevel()
-    {
-        var map = new Map(50, 25);
-        var state = new GameState(map);
-
-        // Создаем комнаты
-        CreateRoom(map, 2, 2, 10, 8);
-        CreateRoom(map, 2, 12, 12, 10);
-        CreateRoom(map, 35, 2, 12, 8);
-        CreateRoom(map, 18, 8, 14, 10);
-        CreateRoom(map, 35, 12, 12, 10);
-        CreateRoom(map, 2, 20, 8, 4);
-
-        // Коридоры
-        DigHorizontalPassage(map, 11, 18, 5);
-        DigVerticalPassage(map, 6, 9, 12);
-        DigHorizontalPassage(map, 31, 35, 6);
-        DigPath(map, 31, 13, 35, 17);
-        DigHorizontalPassage(map, 13, 35, 17);
-        DigVerticalPassage(map, 6, 21, 20);
-
-        // Препятствия
-        map.SetCellType(6, 15, Cell.CellType.Wall);
-        map.SetCellType(10, 15, Cell.CellType.Wall);
-        CreateMiniMaze(map, 22, 11);
-        
-        // Проверяем, что позиции проходимы
-        if (!map.IsWalkable(6, 5)) map.SetCellType(6, 5, Cell.CellType.Floor);
-        if (!map.IsWalkable(40, 5)) map.SetCellType(40, 5, Cell.CellType.Floor);
-        if (!map.IsWalkable(25, 13)) map.SetCellType(25, 13, Cell.CellType.Floor);
-        if (!map.IsWalkable(5, 21)) map.SetCellType(5, 21, Cell.CellType.Floor);
-        if (!map.IsWalkable(15, 5)) map.SetCellType(15, 5, Cell.CellType.Floor);
-        if (!map.IsWalkable(38, 6)) map.SetCellType(38, 6, Cell.CellType.Floor);
-
-        state.EntityRepository.SetPlayer(_entityFactory.CreatePlayer(6, 5));
-        state.EntityRepository.AddTreasure(_entityFactory.CreateTreasure(40, 5, 100));
-        state.EntityRepository.AddTreasure(_entityFactory.CreateTreasure(25, 13, 50));
-        state.EntityRepository.AddTreasure(_entityFactory.CreateTreasure(5, 21, 20));
-        state.EntityRepository.AddMovingEnemy(_entityFactory.CreateMovingEnemy(15, 5, 5));
-        state.EntityRepository.AddMovingEnemy(_entityFactory.CreateMovingEnemy(38, 6, 12));
-
-        state.UpdateSaveTime();
-        return state;
-    }
-
-    public GameState CreateRandomLevel(int width, int height)
-    {
-        return _mazeGenerator.CreateRandomMazeLevel(width, height);
-    }
-
-    private void CreateRoom(Map map, int x, int y, int width, int height)
-    {
-        for (int i = x; i < x + width; i++)
+        public LevelGenerator(IEntityFactory entityFactory = null)
         {
-            for (int j = y; j < y + height; j++)
+            _entityFactory = entityFactory ?? new EntityFactory();
+        }
+
+        public GameState CreateRandomLevel(int width, int height)
+        {
+            var map = CreateBaseMap(width, height);
+            var state = new GameState(map);
+
+            PlacePlayer(state);
+            PlaceTreasures(state, 3, 8);
+            PlaceMovingEnemies(state, 2, 3);
+            PlaceStaticEnemies(state, 1, 3);
+
+            return state;
+        }
+
+        private void PlaceMovingEnemies(GameState state, int minCount, int maxCount)
+        {
+            int count = _random.Next(minCount, maxCount + 1);
+            for (int i = 0; i < count; i++)
             {
-                if (i == x || i == x + width - 1 || j == y || j == y + height - 1)
-                    map.SetCellType(i, j, Cell.CellType.Wall);
-                else
-                    map.SetCellType(i, j, Cell.CellType.Floor);
+                var pos = FindSpawnPosition(state.Map, state.EntityRepository, 4);
+                state.EntityRepository.AddMovingEnemy(
+                    _entityFactory.CreateMovingEnemy(pos.x, pos.y, _random.Next(8, 15))
+                );
             }
         }
-    }
 
-    private void DigHorizontalPassage(Map map, int x1, int x2, int y)
-    {
-        for (int x = Math.Min(x1, x2); x <= Math.Max(x1, x2); x++)
+        private void PlaceStaticEnemies(GameState state, int minCount, int maxCount)
         {
-            map.SetCellType(x, y, Cell.CellType.Floor);
+            int count = _random.Next(minCount, maxCount + 1);
+            for (int i = 0; i < count; i++)
+            {
+                var pos = FindSpawnPosition(state.Map, state.EntityRepository, 4);
+                state.EntityRepository.AddStaticEnemy(
+                    _entityFactory.CreateStaticEnemy(pos.x, pos.y, _random.Next(10, 18))
+                );
+            }
         }
-    }
 
-    private void DigVerticalPassage(Map map, int x, int y1, int y2)
-    {
-        for (int y = Math.Min(y1, y2); y <= Math.Max(y1, y2); y++)
+        private Map CreateBaseMap(int width, int height)
         {
-            map.SetCellType(x, y, Cell.CellType.Floor);
+            var map = new Map(width, height);
+            GenerateScatteredWalls(map, (width * height) / 15);
+            return map;
         }
-    }
 
-    private void DigPath(Map map, int x1, int y1, int x2, int y2)
-    {
-        DigHorizontalPassage(map, x1, x2, y1);
-        DigVerticalPassage(map, x2, y1, y2);
-    }
+        private void PlacePlayer(GameState state)
+        {
+            var playerPos = FindSpawnPosition(state.Map, state.EntityRepository, 0);
+            state.EntityRepository.SetPlayer(_entityFactory.CreatePlayer(playerPos.x, playerPos.y));
+        }
 
-    private void CreateMiniMaze(Map map, int startX, int startY)
-    {
-        map.SetCellType(startX, startY, Cell.CellType.Wall);
-        map.SetCellType(startX + 1, startY, Cell.CellType.Wall);
-        map.SetCellType(startX, startY + 2, Cell.CellType.Wall);
+        private void PlaceTreasures(GameState state, int minCount, int maxCount)
+        {
+            int count = _random.Next(minCount, maxCount + 1);
+            for (int i = 0; i < count; i++)
+            {
+                var pos = FindSpawnPosition(state.Map, state.EntityRepository, 2);
+                state.EntityRepository.AddTreasure(
+                    _entityFactory.CreateTreasure(pos.x, pos.y, _random.Next(10, 50))
+                );
+            }
+        }
+
+        private (int x, int y) FindSpawnPosition(Map map, IEntityRepository entities, int minDistanceFromPlayer = 3)
+        {
+            var walkablePositions = GetWalkablePositions(map).ToList();
+    
+            if (entities.Player != null)
+            {
+                var validPositions = walkablePositions
+                    .Where(pos => !entities.HasEntityAt(pos.x, pos.y))
+                    .Where(pos => Math.Abs(pos.x - entities.Player.X) + Math.Abs(pos.y - entities.Player.Y) >= minDistanceFromPlayer)
+                    .ToList();
+
+                return validPositions.Count > 0
+                    ? validPositions[_random.Next(validPositions.Count)]
+                    : GetFallbackPosition(walkablePositions, entities);
+            }
+    
+            var positions = walkablePositions
+                .Where(pos => !entities.HasEntityAt(pos.x, pos.y))
+                .ToList();
+
+            return positions.Count > 0
+                ? positions[_random.Next(positions.Count)]
+                : walkablePositions[_random.Next(walkablePositions.Count)];
+        }
+
+        private (int x, int y) GetFallbackPosition(List<(int x, int y)> walkablePositions, IEntityRepository entities)
+        {
+            var anyFree = walkablePositions
+                .Where(pos => !entities.HasEntityAt(pos.x, pos.y))
+                .ToList();
+        
+            return anyFree.Count > 0
+                ? anyFree[_random.Next(anyFree.Count)]
+                : walkablePositions[_random.Next(walkablePositions.Count)];
+        }
+
+        private IEnumerable<(int x, int y)> GetWalkablePositions(Map map)
+        {
+            for (int x = 0; x < map.Width; x++)
+                for (int y = 0; y < map.Height; y++)
+                    if (map.IsWalkable(x, y))
+                        yield return (x, y);
+        }
+
+        private void GenerateScatteredWalls(Map map, int wallCount)
+        {
+            int placed = 0;
+            for (int i = 0; i < wallCount * 3 && placed < wallCount; i++)
+            {
+                int x = _random.Next(1, map.Width - 2);
+                int y = _random.Next(1, map.Height - 2);
+
+                if (map.IsWalkable(x, y) && CanPlaceWall(map, x, y))
+                {
+                    map.SetCellType(x, y, Cell.CellType.Wall);
+                    placed++;
+                }
+            }
+        }
+
+        private bool CanPlaceWall(Map map, int x, int y)
+        {
+            int centerX = map.Width / 2;
+            int centerY = map.Height / 2;
+            return Math.Abs(x - centerX) + Math.Abs(y - centerY) > 5;
+        }
     }
 }

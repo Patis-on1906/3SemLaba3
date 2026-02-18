@@ -151,16 +151,46 @@ namespace Laba3.WPF
 
         public void ShowGameOver()
         {
-            MessageBox.Show("=== GAME OVER ===", "Конец игры",
-                MessageBoxButton.OK, MessageBoxImage.Error);
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                var result = MessageBox.Show(
+                    "=== GAME OVER ===\n\nВы погибли!\n\nХотите начать новую игру?", 
+                    "Конец игры", 
+                    MessageBoxButton.YesNo, 
+                    MessageBoxImage.Question);
+            
+                if (result == MessageBoxResult.Yes)
+                {
+                    if (Application.Current.MainWindow?.DataContext is GameViewModel viewModel)
+                    {
+                        viewModel.NewGameCommand.Execute(null);
+                    }
+                }
+                else
+                {
+                    Application.Current.Shutdown();
+                }
+            });
         }
 
         public void ShowVictory()
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
-                MessageBox.Show("=== ПОБЕДА! ===", "Победа!",
-                    MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                var result = MessageBox.Show(
+                    "=== ПОБЕДА! ===\n\nВы собрали все сокровища!\n\nХотите начать новую игру?", 
+                    "Победа!", 
+                    MessageBoxButton.YesNo, 
+                    MessageBoxImage.Exclamation);
+            
+                if (result == MessageBoxResult.Yes)
+                {
+                    // Находим GameViewModel и вызываем NewGame
+                    if (Application.Current.MainWindow?.DataContext is GameViewModel viewModel)
+                    {
+                        viewModel.NewGameCommand.Execute(null);
+                    }
+                }
             });
         }
 
