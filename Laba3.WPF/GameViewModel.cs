@@ -125,6 +125,33 @@ namespace Laba3.WPF
                 _gameTimer.Stop();
                 _renderer.ShowGameOver();
             }
+            catch (VictoryException)
+            {
+                _gameTimer.Stop();
+                HandleVictory();
+            }
+        }
+
+        private void HandleVictory()
+        {
+            // Используем Dispatcher для показа MessageBox в UI-потоке
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                var result = MessageBox.Show(
+                    "=== ПОБЕДА! ===\n\nВы собрали все сокровища!\n\nХотите начать новую игру?", 
+                    "Победа!", 
+                    MessageBoxButton.YesNo, 
+                    MessageBoxImage.Exclamation);
+        
+                if (result == MessageBoxResult.Yes)
+                {
+                    NewGame();
+                }
+                else
+                {
+                    RequestClose?.Invoke(); // Закрываем окно при отказе
+                }
+            });
         }
 
         private void HandleInput(object? parameter)

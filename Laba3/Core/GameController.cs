@@ -118,13 +118,25 @@ namespace Laba3
 
         private void CheckGameState()
         {
-            _gameLogic.CheckGameOver(_state);
+            try
+            {
+                _gameLogic.CheckGameOver(_state);
+            }
+            catch (GameOverException)
+            {
+                throw; // Пробрасываем для обработки в ViewModel
+            }
 
             if (_gameLogic.CheckVictory(_state))
             {
-                _renderer.ShowVictory();
-                _isRunning = false;
+                _isRunning = false; // Останавливаем обновления
+                throw new VictoryException(); // Бросаем специальное исключение
             }
         }
+    }
+    
+    public class VictoryException : Exception
+    {
+        public VictoryException() : base("Победа!") { }
     }
 }
