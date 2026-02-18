@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
@@ -13,8 +14,6 @@ namespace Laba3.WPF
         private readonly IGameLogicService _gameLogicService;
         private readonly ILevelGenerator _levelGenerator;
         private readonly IEntityFactory _entityFactory;
-        private readonly IInputHandler _inputHandler;
-        private readonly GameStateChecker _stateChecker;
         private readonly DispatcherTimer _gameTimer;
         private GameController _gameController;
         private string _playerInfo = string.Empty;
@@ -37,8 +36,6 @@ namespace Laba3.WPF
             _entityFactory = entityFactory ?? throw new ArgumentNullException(nameof(entityFactory));
             _gameLogicService = new GameLogicService(_entityFactory);
             _levelGenerator = new LevelGenerator(_entityFactory);
-            _inputHandler = new InputCommandMapper();
-            _stateChecker = new GameStateChecker();
 
             NewGameCommand = new RelayCommand(_ => NewGame());
             SaveGameCommand = new RelayCommand(_ => SaveGame());
@@ -80,7 +77,6 @@ namespace Laba3.WPF
         }
 
         public event Action? RequestClose;
-
         public event PropertyChangedEventHandler? PropertyChanged;
 
         public void HandleClosing()
@@ -101,11 +97,19 @@ namespace Laba3.WPF
                 state,
                 _renderer,
                 _saveService,
-                _inputHandler,
                 _gameLogicService);
+
+            // Подписываемся на событие RequestClose из контроллера
+            _gameController.RequestClose += OnGameControllerRequestClose;
 
             UpdatePlayerInfo();
             _renderer.Draw(_gameController.GameState);
+        }
+
+        private void OnGameControllerRequestClose()
+        {
+            // Вызываем событие RequestClose ViewModel, которое закрывает окно
+            RequestClose?.Invoke();
         }
 
         private void GameTimer_Tick(object? sender, EventArgs e)
@@ -115,12 +119,6 @@ namespace Laba3.WPF
                 _gameController.Update();
                 _renderer.Draw(_gameController.GameState);
                 UpdatePlayerInfo();
-
-                if (_stateChecker.CheckVictory(_gameController.GameState))
-                {
-                    _gameTimer.Stop();
-                    _renderer.ShowVictory();
-                }
             }
             catch (GameOverException)
             {
@@ -131,55 +129,24 @@ namespace Laba3.WPF
 
         private void HandleInput(object? parameter)
         {
-            if (parameter is not InputCommand command)
+            if (parameter is InputCommand command)
             {
-                return;
-            }
-
-            switch (command)
-            {
-                case InputCommand.Save:
-                    SaveGame();
-                    break;
-                case InputCommand.Load:
-                    LoadGame();
-                    break;
-                case InputCommand.Quit:
-                    RequestClose?.Invoke();
-                    break;
-                case InputCommand.None:
-                    break;
-                default:
-                    _gameController.HandleCommand(command);
-                    break;
+                _gameController.HandleCommand(command);
             }
         }
 
         private void NewGame()
         {
-            // Останавливаем таймер на время создания новой игры
             _gameTimer.Stop();
-    
             var newState = _levelGenerator.CreateRandomLevel(46, 21);
             ReplaceGameController(newState);
-    
-            // Запускаем таймер
             _gameTimer.Start();
-    
             _renderer.Draw(_gameController.GameState);
         }
 
         private void SaveGame()
         {
-            try
-            {
-                _saveService.Save(_gameController.GameState);
-                _renderer.ShowMessage("Игра успешно сохранена!", ConsoleColor.Green);
-            }
-            catch (SaveLoadException ex)
-            {
-                _renderer.ShowMessage($"Ошибка сохранения: {ex.Message}", ConsoleColor.Red);
-            }
+            _gameController.SaveGame();
         }
 
         private void SaveOnExit()
@@ -198,39 +165,21 @@ namespace Laba3.WPF
         {
             try
             {
-                // Спрашиваем подтверждение, так как текущий прогресс будет потерян
                 var result = MessageBox.Show(
                     "Загрузить сохранение? Текущий прогресс будет потерян.", 
                     "Подтверждение", 
                     MessageBoxButton.YesNo, 
                     MessageBoxImage.Question);
-            
+        
                 if (result != MessageBoxResult.Yes)
                     return;
-            
+        
                 _gameTimer.Stop();
-                var loadedState = _saveService.Load();
-
-                if (loadedState == null)
-                {
-                    _renderer.ShowMessage("Сохранение не найдено", ConsoleColor.Yellow);
-                    _gameTimer.Start();
-                    return;
-                }
-
-                if (loadedState.Map == null || loadedState.EntityRepository == null || loadedState.Player == null)
-                {
-                    _renderer.ShowMessage("Ошибка: повреждённое сохранение", ConsoleColor.Red);
-                    _gameTimer.Start();
-                    return;
-                }
-
-                ReplaceGameController(loadedState);
-                _renderer.ShowMessage("Игра успешно загружена!", ConsoleColor.Green);
-            }
-            catch (SaveLoadException ex)
-            {
-                _renderer.ShowMessage($"Ошибка загрузки: {ex.Message}", ConsoleColor.Red);
+                _gameController.LoadGame();
+        
+                // Обновляем отображение
+                _renderer.Draw(_gameController.GameState);
+                UpdatePlayerInfo();
             }
             finally
             {
