@@ -1,82 +1,82 @@
-﻿
+﻿using System;
+
 namespace Laba3
 {
     public class GameController
     {
         private GameState _state;
         private readonly IRenderer _renderer;
-        private readonly IInputHandler _inputHandler; // Используем интерфейс
         private readonly ISaveService _saveService;
         private readonly IGameLogicService _gameLogic;
         private bool _isRunning = true;
+        
+        public event Action? RequestClose;
 
         public GameController(
             GameState state,
             IRenderer renderer,
             ISaveService saveService,
-            IInputHandler inputHandler, // Принимаем IInputHandler
             IGameLogicService gameLogic)
         {
             _state = state ?? throw new ArgumentNullException(nameof(state));
             _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
             _saveService = saveService ?? throw new ArgumentNullException(nameof(saveService));
-            _inputHandler = inputHandler ?? throw new ArgumentNullException(nameof(inputHandler));
             _gameLogic = gameLogic ?? throw new ArgumentNullException(nameof(gameLogic));
         }
-        
-        public void Run()
+
+        public GameState GameState => _state;
+        public bool IsRunning => _isRunning;
+
+        public void Update()
         {
-            try
-            {
-                while (_isRunning)
-                {
-                    _renderer.Draw(_state);
-                    
-                    var command = _inputHandler.GetCommand();
-                    HandleCommand(command);
-                    
-                    CheckGameState();
-                }
-            }
-            catch (GameOverException)
-            {
-                _renderer.ShowGameOver();
-            }
+            _gameLogic.UpdateWorld(_state);
+            CheckGameState();
         }
-        
-        private void HandleCommand(InputCommand command)
+
+        public void HandleCommand(InputCommand command)
         {
             switch (command)
             {
                 case InputCommand.Quit:
-                    _isRunning = false;
+                    RequestClose?.Invoke(); // Вызываем событие вместо _isRunning = false
                     break;
-                    
                 case InputCommand.Save:
                     SaveGame();
                     break;
-                    
                 case InputCommand.Load:
                     LoadGame();
                     break;
-                    
-                case InputCommand.None:
-                    break;
-                    
-                default:
+                case InputCommand.MoveUp:
+                case InputCommand.MoveDown:
+                case InputCommand.MoveLeft:
+                case InputCommand.MoveRight:
                     HandleMovement(command);
+                    break;
+                case InputCommand.None:
                     break;
             }
         }
-        
+
         private void HandleMovement(InputCommand command)
         {
-            var (dx, dy) = _inputHandler.GetMovementVector(command);
+            var (dx, dy) = GetMovementVector(command);
             _gameLogic.ProcessPlayerMovement(_state, dx, dy);
             _gameLogic.UpdateWorld(_state);
         }
-        
-        private void SaveGame()
+
+        private (int dx, int dy) GetMovementVector(InputCommand command)
+        {
+            return command switch
+            {
+                InputCommand.MoveUp => (0, -1),
+                InputCommand.MoveDown => (0, 1),
+                InputCommand.MoveLeft => (-1, 0),
+                InputCommand.MoveRight => (1, 0),
+                _ => (0, 0)
+            };
+        }
+
+        public void SaveGame()
         {
             try
             {
@@ -88,38 +88,39 @@ namespace Laba3
                 _renderer.ShowMessage($"Ошибка сохранения: {ex.Message}", ConsoleColor.Red);
             }
         }
-        
-        private void LoadGame()
+
+        public void LoadGame()
         {
             try
             {
-                var newState = _saveService.Load();
-                if (newState != null)
-                {
-                    _state = newState;
-                    _renderer.ShowMessage("Игра успешно загружена!", ConsoleColor.Green);
-                }
-                else
+                var loadedState = _saveService.Load();
+                
+                if (loadedState == null)
                 {
                     _renderer.ShowMessage("Сохранение не найдено", ConsoleColor.Yellow);
+                    return;
                 }
+
+                if (loadedState.Map == null || loadedState.EntityRepository == null || loadedState.Player == null)
+                {
+                    _renderer.ShowMessage("Ошибка: повреждённое сохранение", ConsoleColor.Red);
+                    return;
+                }
+
+                _state = loadedState;
+                _renderer.ShowMessage("Игра успешно загружена!", ConsoleColor.Green);
             }
             catch (SaveLoadException ex)
             {
                 _renderer.ShowMessage($"Ошибка загрузки: {ex.Message}", ConsoleColor.Red);
             }
         }
-        
+
         private void CheckGameState()
         {
             _gameLogic.CheckGameOver(_state);
-            CheckVictory();
-        }
-        
-        private void CheckVictory()
-        {
-            var allTreasuresCollected = _state.EntityRepository.Treasures.All(t => t.Collected);
-            if (allTreasuresCollected && _state.Player?.IsAlive == true)
+
+            if (_gameLogic.CheckVictory(_state))
             {
                 _renderer.ShowVictory();
                 _isRunning = false;

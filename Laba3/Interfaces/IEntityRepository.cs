@@ -7,6 +7,9 @@ public interface IEntityRepository
     IReadOnlyList<StaticEnemy> StaticEnemies { get; }
     IReadOnlyList<Treasure> Treasures { get; }
     
+    bool HasEntityAt(int x, int y, IEntity exclude = null);
+    IEntity GetEntityAt(int x, int y);
+
     void SetPlayer(Player player);
     void AddMovingEnemy(MovingEnemy enemy);
     void AddStaticEnemy(StaticEnemy enemy);

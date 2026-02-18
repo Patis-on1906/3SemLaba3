@@ -1,0 +1,202 @@
+﻿using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Shapes;
+
+namespace Laba3.WPF
+{
+    public class WpfRenderer : IRenderer
+    {
+        private readonly Canvas _canvas;
+        private int _tileSize;
+
+        private readonly Brush[] _entityBrushes;
+        private readonly Typeface _typeface = new Typeface("Consolas");
+
+        public WpfRenderer(Canvas canvas, int tileSize = 32)
+        {
+            _canvas = canvas;
+            _tileSize = tileSize;
+
+            _entityBrushes = new Brush[]
+            {
+                Brushes.Green,      
+                Brushes.Red,       
+                Brushes.DarkRed,    
+                Brushes.Yellow     
+            };
+        }
+
+        public void Draw(IGameState state)
+        {
+            Render(state);
+        }
+
+        public void Render(IGameState state)
+        {
+            if (state?.Map == null) return;
+            
+            _canvas.Children.Clear();
+            
+            _canvas.Width = state.Map.Width * _tileSize;
+            _canvas.Height = state.Map.Height * _tileSize;
+            
+            for (int y = 0; y < state.Map.Height; y++)
+            {
+                for (int x = 0; x < state.Map.Width; x++)
+                {
+                    var cell = state.Map.GetCell(x, y);
+                    var isWall = cell?.IsWalkable == false;
+                    
+                    var rect = new Rectangle
+                    {
+                        Width = _tileSize,
+                        Height = _tileSize,
+                        Fill = isWall ? Brushes.DarkSlateGray : Brushes.DarkGray,
+                        Stroke = Brushes.Black,
+                        StrokeThickness = 0.5
+                    };
+
+                    Canvas.SetLeft(rect, x * _tileSize);
+                    Canvas.SetTop(rect, y * _tileSize);
+                    _canvas.Children.Add(rect);
+
+                    if (isWall)
+                    {
+                        var innerRect = new Rectangle
+                        {
+                            Width = _tileSize - 4,
+                            Height = _tileSize - 4,
+                            Fill = Brushes.SlateGray,
+                            Stroke = Brushes.Black,
+                            StrokeThickness = 0.3
+                        };
+
+                        Canvas.SetLeft(innerRect, x * _tileSize + 2);
+                        Canvas.SetTop(innerRect, y * _tileSize + 2);
+                        _canvas.Children.Add(innerRect);
+                    }
+                }
+            }
+            
+            foreach (var entity in state.EntityRepository.GetAllEntities())
+            {
+                if (entity is Treasure t && t.Collected) continue;
+
+                var brush = _entityBrushes[(int)entity.EntityType];
+
+                var ellipse = new Ellipse
+                {
+                    Width = _tileSize - 8,
+                    Height = _tileSize - 8,
+                    Fill = brush,
+                    Stroke = Brushes.Black,
+                    StrokeThickness = 1
+                };
+
+                Canvas.SetLeft(ellipse, entity.X * _tileSize + 4);
+                Canvas.SetTop(ellipse, entity.Y * _tileSize + 4);
+                _canvas.Children.Add(ellipse);
+                
+                var text = new TextBlock
+                {
+                    Text = entity.Symbol.ToString(),
+                    FontFamily = new FontFamily("Consolas"),
+                    FontSize = _tileSize * 0.4,
+                    Foreground = Brushes.Black,
+                    FontWeight = FontWeights.Bold,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+
+                Canvas.SetLeft(text, entity.X * _tileSize + _tileSize * 0.3);
+                Canvas.SetTop(text, entity.Y * _tileSize + _tileSize * 0.2);
+                _canvas.Children.Add(text);
+
+                if (entity.EntityType == EntityType.Player)
+                {
+                    var highlight = new Rectangle
+                    {
+                        Width = _tileSize,
+                        Height = _tileSize,
+                        Stroke = Brushes.Lime,
+                        StrokeThickness = 2,
+                        Fill = Brushes.Transparent
+                    };
+
+                    Canvas.SetLeft(highlight, entity.X * _tileSize);
+                    Canvas.SetTop(highlight, entity.Y * _tileSize);
+                    _canvas.Children.Add(highlight);
+                }
+            }
+
+        }
+
+        public void ShowMessage(string message, ConsoleColor color)
+        {
+            var brush = color switch
+            {
+                ConsoleColor.Red => Brushes.Red,
+                ConsoleColor.Green => Brushes.Green,
+                ConsoleColor.Yellow => Brushes.Yellow,
+                _ => Brushes.White
+            };
+
+            MessageBox.Show(message, "Сообщение",
+                MessageBoxButton.OK,
+                color == ConsoleColor.Red ? MessageBoxImage.Error :
+                color == ConsoleColor.Green ? MessageBoxImage.Information :
+                MessageBoxImage.Warning);
+        }
+
+        public void ShowGameOver()
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                var result = MessageBox.Show(
+                    "=== GAME OVER ===\n\nВы погибли!\n\nХотите начать новую игру?", 
+                    "Конец игры", 
+                    MessageBoxButton.YesNo, 
+                    MessageBoxImage.Question);
+            
+                if (result == MessageBoxResult.Yes)
+                {
+                    if (Application.Current.MainWindow?.DataContext is GameViewModel viewModel)
+                    {
+                        viewModel.NewGameCommand.Execute(null);
+                    }
+                }
+                else
+                {
+                    Application.Current.Shutdown();
+                }
+            });
+        }
+
+        public void ShowVictory()
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                var result = MessageBox.Show(
+                    "=== ПОБЕДА! ===\n\nВы собрали все сокровища!\n\nХотите начать новую игру?", 
+                    "Победа!", 
+                    MessageBoxButton.YesNo, 
+                    MessageBoxImage.Exclamation);
+            
+                if (result == MessageBoxResult.Yes)
+                {
+                    // Находим GameViewModel и вызываем NewGame
+                    if (Application.Current.MainWindow?.DataContext is GameViewModel viewModel)
+                    {
+                        viewModel.NewGameCommand.Execute(null);
+                    }
+                }
+            });
+        }
+
+        public void ChangeTileSize(int newSize)
+        {
+            _tileSize = newSize;
+        }
+    }
+}
